@@ -335,7 +335,7 @@ const MEMBROS = ['bracoE','bracoD','antebracoE','antebracoD','coxaE','coxaD','pa
 const DOBRAS = [['peitoral','Peitoral (tórax)'],['axilar','Axilar média'],['triceps','Tríceps'],['subescapular','Subescapular'],['abdominal','Abdominal'],['suprailiaca','Supra-ilíaca'],['coxa','Coxa']];
 /* Etapas do lançamento */
 const STEPS = [
- { key:'dados', nome:'Dados', titulo:'Dados da avaliação', lead:'Confira a data, o método e os dados básicos. Idade e altura já vêm do cadastro da cliente.', fields:[
+ { key:'dados', nome:'Dados', titulo:'Dados da avaliação', lead:'Confira a data, o método e os dados básicos. Idade e altura já vêm do cadastro do cliente.', fields:[
    {p:'data', label:'Data da avaliação', type:'date', req:true},
    {p:'hora', label:'Hora', type:'time', hint:'Opcional. Ajuda a repetir as próximas medições no mesmo horário.'},
    {p:'metodo', label:'Como a gordura foi medida?', type:'select', opts:METODOS, hint:'Bioimpedância: balança. Dobras: plicômetro (etapa 5).'},
@@ -370,7 +370,7 @@ const STEPS = [
    {p:'dobras.abdominal', label:'Abdominal', unit:'mm', hint:'Vertical, 2 cm ao lado direito do umbigo.'},
    {p:'dobras.suprailiaca', label:'Supra-ilíaca', unit:'mm', hint:'Diagonal, logo acima do osso do quadril.'},
    {p:'dobras.coxa', label:'Coxa', unit:'mm', hint:'Vertical, no meio entre a virilha e o joelho.'} ]},
- { key:'pressao', nome:'Rotina e notas', opc:true, titulo:'Pressão arterial, treino e observações', lead:'Tudo opcional. O tempo de treino entra no cálculo da água diária; as observações aparecem no relatório.', tip:'<b>Para medir a pressão:</b> cliente sentada, 5 minutos em repouso, braço apoiado na altura do coração.', fields:[
+ { key:'pressao', nome:'Rotina e notas', opc:true, titulo:'Pressão arterial, treino e observações', lead:'Tudo opcional. O tempo de treino entra no cálculo da água diária; as observações aparecem no relatório.', tip:'<b>Para medir a pressão:</b> cliente sentado(a), 5 minutos em repouso, braço apoiado na altura do coração.', fields:[
    {p:'pas', label:'Pressão sistólica (máxima)', unit:'mmHg', hint:'O número maior. Ex.: 120.'},
    {p:'pad', label:'Pressão diastólica (mínima)', unit:'mmHg', hint:'O número menor. Ex.: 80.'},
    {p:'treinoMin', label:'Treino por dia', unit:'min', hint:'Tempo médio de exercício nos dias de treino. Ex.: 60.'},
@@ -545,7 +545,7 @@ function viewLogin(){
       <div class="f"><label for="r_email">E-mail</label><input id="r_email" type="email" autocomplete="email" required></div>
       <button class="btn pri" type="submit">Enviar link</button><button class="linkbtn" type="button" data-act="tab" data-t="entrar">← Voltar para o login</button></form>`;
   return `<section class="auth">
-   <div class="auth-brand"><span class="logo-tile"><img src="${LOGO}" alt="Logotipo"></span><div><div class="nm">${esc((c.profissional||'').toUpperCase())}</div></div><div class="sb">${esc(c.titulo)}</div><div class="rg">${esc(c.registro)}</div><p>Avaliação corporal, relatórios de evolução e acompanhamento das suas clientes.</p></div>
+   <div class="auth-brand"><span class="logo-tile"><img src="${LOGO}" alt="Logotipo"></span><div><div class="nm">${esc((c.profissional||'').toUpperCase())}</div></div><div class="sb">${esc(c.titulo)}</div><div class="rg">${esc(c.registro)}</div><p>Avaliação corporal, relatórios de evolução e acompanhamento dos seus clientes.</p></div>
    <div class="auth-main"><div class="auth-card">
      <h1>${t==='reset'?'Recuperar senha':'Acesse sua conta'}</h1>
      ${t!=='reset'?`<div class="tabs" role="tablist"><button type="button" role="tab" aria-selected="${t==='entrar'}" data-act="tab" data-t="entrar">Entrar</button><button type="button" role="tab" aria-selected="${t==='criar'}" data-act="tab" data-t="criar">Criar novo login</button></div>`:''}
@@ -574,21 +574,21 @@ function viewLista(){
   const q = state.q.trim().toLowerCase();
   const list = state.patients.filter(p => !q || (p.nome||'').toLowerCase().includes(q)).sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
   let h = `<section class="finder"><div class="eyebrow">Clientes</div><h1>Buscar ou cadastrar cliente</h1>
-    <div class="row"><input id="busca" class="search" type="search" placeholder="Digite o nome da cliente" value="${esc(state.q)}" aria-label="Buscar cliente pelo nome" autocomplete="off"><button class="btn pri" data-act="novoPaciente" style="padding:13px 18px">+ Cadastrar nova cliente</button></div></section>`;
+    <div class="row"><input id="busca" class="search" type="search" placeholder="Digite o nome do cliente" value="${esc(state.q)}" aria-label="Buscar cliente pelo nome" autocomplete="off"><button class="btn pri" data-act="novoPaciente" style="padding:13px 18px">+ Cadastrar novo cliente</button></div></section>`;
   if (loading) return h + `<div class="panel empty"><p class="muted">Carregando clientes…</p></div>`;
-  if (!state.patients.length) return h + `<div class="panel empty"><h2>Nenhuma cliente cadastrada ainda</h2><p class="muted">Comece cadastrando nome, sexo e altura. Depois é só lançar a avaliação, etapa por etapa, e gerar o relatório.</p><button class="btn pri" data-act="novoPaciente">Cadastrar a primeira cliente</button></div>`;
-  h += `<div class="row" style="justify-content:space-between"><span class="muted">${q ? `${list.length} ${list.length===1?'resultado':'resultados'} para “${esc(state.q)}”` : `${state.patients.length} ${state.patients.length===1?'cliente cadastrada':'clientes cadastradas'}`}</span></div>`;
+  if (!state.patients.length) return h + `<div class="panel empty"><h2>Nenhum cliente cadastrado ainda</h2><p class="muted">Comece cadastrando nome, sexo e altura. Depois é só lançar a avaliação, etapa por etapa, e gerar o relatório.</p><button class="btn pri" data-act="novoPaciente">Cadastrar o primeiro cliente</button></div>`;
+  h += `<div class="row" style="justify-content:space-between"><span class="muted">${q ? `${list.length} ${list.length===1?'resultado':'resultados'} para “${esc(state.q)}”` : `${state.patients.length} ${state.patients.length===1?'cliente cadastrado':'clientes cadastrados'}`}</span></div>`;
   h += `<div class="plist">` + (list.map(p => {
     const ev = evalsOf(p.id); const last = ev.at(-1);
     const idade = ageAt(p.nascimento, today()) ?? (last ? num(last.idade) : null);
     return `<button class="pcard" data-act="abrir" data-id="${p.id}"><h3>${esc(p.nome)}</h3>
       <div class="meta">${p.sexo==='M'?'Masculino':'Feminino'}${idade!=null?' · '+idade+' anos':''}${p.altura?' · '+fmt(num(p.altura),0)+' cm':''}</div>
       <div class="meta">${ev.length} ${ev.length===1?'avaliação':'avaliações'}${last?' · última em '+fdate(last.data):''}</div>
-      <div>${lastEvalChip(p)}</div></button>`; }).join('') || `<div class="panel empty" style="grid-column:1/-1"><p>Nenhuma cliente com esse nome.</p><button class="btn pri" data-act="novoPaciente">Cadastrar “${esc(state.q)}”</button></div>`) + `</div>`;
+      <div>${lastEvalChip(p)}</div></button>`; }).join('') || `<div class="panel empty" style="grid-column:1/-1"><p>Nenhum cliente com esse nome.</p><button class="btn pri" data-act="novoPaciente">Cadastrar “${esc(state.q)}”</button></div>`) + `</div>`;
   return h;
 }
 function viewPaciente(){
-  const p = patientById(state.pid); if (!p) return `<div class="panel empty"><p>Cliente não encontrada.</p><button class="btn" data-act="home">Voltar</button></div>`;
+  const p = patientById(state.pid); if (!p) return `<div class="panel empty"><p>Cliente não encontrado.</p><button class="btn" data-act="home">Voltar</button></div>`;
   const ev = evalsOf(p.id); const idadeAtual = ageAt(p.nascimento, today());
   let h = `<div><button class="btn ghost sm" data-act="home">← Clientes</button></div>
   <div class="pagehead"><div><div class="eyebrow">Cliente</div><h1>${esc(p.nome)}</h1></div>
@@ -611,11 +611,11 @@ function viewPaciente(){
 function viewPForm(){
   const p = state.pid ? patientById(state.pid) || {} : { nome: state.q.trim() };
   return `<div><button class="btn ghost sm" data-act="${state.pid?'abrir':'home'}" data-id="${state.pid||''}">← Voltar</button></div>
-  <form id="pform" class="stepcard" novalidate><div><div class="eyebrow">${state.pid?'Editar cadastro':'Nova cliente'}</div><h2>${state.pid?esc(p.nome):'Cadastro da cliente'}</h2></div>
+  <form id="pform" class="stepcard" novalidate><div><div class="eyebrow">${state.pid?'Editar cadastro':'Novo cliente'}</div><h2>${state.pid?esc(p.nome):'Cadastro do cliente'}</h2></div>
    <p class="lead">Só o nome é obrigatório. Com a data de nascimento e a altura, o app preenche idade e altura nas avaliações.</p>
    <div class="fields">
    <div class="f wide"><label for="p_nome">Nome completo</label><input id="p_nome" required value="${esc(p.nome)}" autocomplete="off"></div>
-   <div class="f"><label for="p_sexo">Sexo</label><select id="p_sexo"><option value="F"${p.sexo!=='M'?' selected':''}>Feminino</option><option value="M"${p.sexo==='M'?' selected':''}>Masculino</option></select><span class="hint">Define as faixas de referência do relatório.</span></div>
+   <div class="f"><label for="p_sexo">Sexo</label><select id="p_sexo"><option value=""${!p.sexo?' selected':''} disabled>Selecione</option><option value="F"${p.sexo==='F'?' selected':''}>Feminino</option><option value="M"${p.sexo==='M'?' selected':''}>Masculino</option></select><span class="hint">Define as faixas de referência do relatório.</span></div>
    <div class="f"><label for="p_nasc">Data de nascimento</label><input id="p_nasc" type="date" value="${esc(p.nascimento)}"></div>
    <div class="f"><label for="p_alt">Altura</label><div class="inu"><input id="p_alt" inputmode="decimal" placeholder="165" value="${fin(p.altura)}"><em>cm</em></div></div>
    <div class="f"><label for="p_tel">WhatsApp</label><input id="p_tel" inputmode="tel" placeholder="(31) 99999-9999" value="${esc(fphone(p.telefone))}"><span class="hint">Para enviar o resumo do relatório.</span></div>
@@ -709,7 +709,7 @@ function viewConfig(){
    <div class="f wide"><label for="c_rod">Texto de rodapé do relatório</label><textarea id="c_rod" placeholder="Orientação que acompanha todos os relatórios">${esc(c.rodape)}</textarea></div>
    </div>
    <div class="navbar"><button class="btn ghost" type="button" data-act="home">Cancelar</button><button class="btn pri" type="submit">Salvar configurações</button></div></form>
-  <section class="stepcard"><div><div class="eyebrow">Backup</div><h2>Cópia de segurança dos dados</h2></div><p class="lead">Baixe um arquivo com todas as clientes e avaliações, ou importe um backup. A importação soma os dados aos atuais e substitui avaliações com o mesmo código.</p>
+  <section class="stepcard"><div><div class="eyebrow">Backup</div><h2>Cópia de segurança dos dados</h2></div><p class="lead">Baixe um arquivo com todos os clientes e avaliações, ou importe um backup. A importação soma os dados aos atuais e substitui avaliações com o mesmo código.</p>
    <div class="row"><button class="btn" type="button" data-act="exportar">Baixar backup (.json)</button><button class="btn" type="button" data-act="importar">Importar backup</button></div>
    <p class="muted" style="margin:0;font-size:13.5px">Conta: ${esc(state.user?.email || '')}</p></section>`;
 }
@@ -1044,7 +1044,7 @@ document.addEventListener('click', async ev => {
   else if (act === 'cancel') { state.confirm = null; render(); }
   else if (act === 'delPaciente') { state.confirm = 'p:'+state.pid; render(); }
   else if (act === 'delAval') { state.confirm = 'e:'+id; render(); }
-  else if (act === 'delPacienteOk') { t.disabled = true; try { for (const e of evalsOf(state.pid)) await store.del('avaliacoes', e.id); await store.del('clientes', state.pid); toast('Cliente excluída'); go('lista', null); } catch (err) { toast('Não foi possível excluir: '+(err?.message||'')); render(); } }
+  else if (act === 'delPacienteOk') { t.disabled = true; try { for (const e of evalsOf(state.pid)) await store.del('avaliacoes', e.id); await store.del('clientes', state.pid); toast('Cadastro excluído'); go('lista', null); } catch (err) { toast('Não foi possível excluir: '+(err?.message||'')); render(); } }
   else if (act === 'delAvalOk') { t.disabled = true; try { await store.del('avaliacoes', id); state.confirm = null; toast('Avaliação excluída'); render(); } catch (err) { toast('Não foi possível excluir: '+(err?.message||'')); render(); } }
   else if (act === 'copiar') { const ta = $('#waText'); try { await navigator.clipboard.writeText(ta.value); toast('Texto copiado'); } catch { ta.focus(); ta.select(); toast('Texto selecionado. Use Ctrl+C para copiar.'); } }
   else if (act === 'pdf') baixarPDF(t);
@@ -1087,10 +1087,10 @@ document.addEventListener('submit', async ev => {
     await doAuth(() => FB.sendPasswordResetEmail(auth, email), `Se houver uma conta com ${email}, o link para criar nova senha foi enviado. Confira também a caixa de spam.`);
   }
   if (f.id === 'pform') {
-    const nome = $('#p_nome').value.trim(); const err = $('#pErr'); if (!nome) { err.textContent = 'Informe o nome da cliente.'; err.hidden = false; return; }
+    const nome = $('#p_nome').value.trim(); const err = $('#pErr'); if (!nome) { err.textContent = 'Informe o nome do cliente.'; err.hidden = false; return; } if (!$('#p_sexo').value) { err.textContent = 'Selecione o sexo do cliente.'; err.hidden = false; return; }
     const old = state.pid ? patientById(state.pid) : null; const id = state.pid || newId();
     const obj = { nome, sexo: $('#p_sexo').value, nascimento: $('#p_nasc').value, altura: num($('#p_alt').value), telefone: $('#p_tel').value.replace(/\D/g,''), obs: $('#p_obs').value.trim(), criadoEm: old?.criadoEm || new Date().toISOString() };
-    try { f.querySelector('[type=submit]').disabled = true; await store.set('clientes', id, obj); state.q = ''; toast(old ? 'Cadastro atualizado' : 'Cliente cadastrada'); go('paciente', id); }
+    try { f.querySelector('[type=submit]').disabled = true; await store.set('clientes', id, obj); state.q = ''; toast(old ? 'Cadastro atualizado' : 'Cliente cadastrado'); go('paciente', id); }
     catch (e2) { err.textContent = 'Não foi possível salvar: ' + (e2?.message || 'erro'); err.hidden = false; f.querySelector('[type=submit]').disabled = false; }
   }
   if (f.id === 'wform') {
