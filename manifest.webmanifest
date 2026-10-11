@@ -3,6 +3,7 @@
   "short_name": "Joyce Fernandes",
   "description": "Avaliação corporal, relatórios de evolução e acompanhamento de clientes.",
   "lang": "pt-BR",
+  "id": "/avaliacao-joyce/?app=joyce-avaliacao-v2",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
