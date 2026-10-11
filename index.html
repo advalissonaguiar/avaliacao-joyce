@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Joyce Fernandes | Avaliação Corporal</title>
+<meta name="theme-color" content="#0B0709">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Rubik:wght@400;500;600;700&display=swap">
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<style>
+[hidden]{display:none!important}
+html,body{margin:0}
+
+/* Layout: boas-vindas em tela cheia; depois barra da marca + coluna única de trabalho (clientes > cliente > avaliação em etapas > relatório). Relatório = folha clara com cabeçalho preto, como o verso do cartão. */
+:root{
+  --bg:#FBF5F8; --surface:#FFFFFF; --sunken:#F4E9EF; --line:#EAD7E1;
+  --fg:#1C1219; --muted:#6E5966; --brand:#C657A0; --accent:#A8408A; --accent-fg:#FFFFFF; --accent-soft:#F8E3EF; --pink:#F8ABAD; --ink:#0B0709;
+  --ok:#2F7D4F; --ok-bg:#DDF1E4; --alert:#9A6200; --alert-bg:#FCEFD3; --danger:#A8322A; --danger-bg:#F8DEDA; --low:#2B5FA6; --low-bg:#DCE7F7;
+  --display:"Anton","Haettenschweiler","Impact","Arial Narrow",sans-serif;
+  --body:"Rubik","Segoe UI",Roboto,Arial,sans-serif;
+  --radius:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D090C; --surface:#181116; --sunken:#120D11; --line:#33242E;
+  --fg:#F3E9EF; --muted:#B49DAB; --brand:#D06AAE; --accent:#E07DBE; --accent-fg:#1A0714; --accent-soft:#3A1B30; --pink:#F8ABAD; --ink:#000000;
+  --ok:#7FD1A0; --ok-bg:#183428; --alert:#F0C064; --alert-bg:#3A2D12; --danger:#F09A90; --danger-bg:#3E1D1A; --low:#93B8F0; --low-bg:#1A2A44;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D090C; --surface:#181116; --sunken:#120D11; --line:#33242E;
+  --fg:#F3E9EF; --muted:#B49DAB; --brand:#D06AAE; --accent:#E07DBE; --accent-fg:#1A0714; --accent-soft:#3A1B30; --pink:#F8ABAD; --ink:#000000;
+  --ok:#7FD1A0; --ok-bg:#183428; --alert:#F0C064; --alert-bg:#3A2D12; --danger:#F09A90; --danger-bg:#3E1D1A; --low:#93B8F0; --low-bg:#1A2A44;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15.5px;line-height:1.45}
+h1,h2,h3{font-family:var(--body);font-weight:600;text-wrap:balance;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.logo-tile{display:grid;place-items:center;background:var(--brand);border-radius:10px;flex:none}
+.logo-tile img{display:block;width:62%;height:auto}
+
+/* Boas-vindas */
+.welcome{min-height:100%;display:grid;place-items:center;padding-inline:16px;padding-block:32px;background:var(--ink);color:#fff;position:relative;overflow:hidden}
+.welcome::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 0 58%,#F8ABAD 58% 64%,#C657A0 64% 100%);opacity:.95}
+.welcome::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 0 66%,rgba(0,0,0,.18) 66% 100%)}
+.wbox{position:relative;z-index:1;display:grid;gap:18px;justify-items:start;max-width:620px;width:100%}
+.wbox .logo-tile{width:92px;height:92px;border-radius:16px;box-shadow:0 0 0 4px #F8ABAD}
+.wname{font-family:var(--display);font-size:22px;letter-spacing:.04em;color:#F8ABAD;line-height:1}
+.wname small{display:block;font-family:var(--body);font-size:14px;color:#fff;letter-spacing:0;margin-top:4px}
+.welcome h1{font-family:var(--display);font-weight:400;font-size:clamp(38px,9vw,64px);line-height:1;letter-spacing:.01em}
+.welcome p{margin:0;font-size:20px;color:#F3DDE8}
+.wgo{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.btn.big{padding:13px 22px;font-size:17px;border-radius:999px}
+.wbar{width:140px;height:4px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden}
+.wbar i{display:block;height:100%;width:100%;background:#F8ABAD;transform-origin:left;animation:wfill 3.6s linear forwards}
+@media (max-width:700px){.welcome{align-items:start;padding-top:12vh}.welcome::before{inset:auto 0 0 0;height:26%;background:linear-gradient(160deg,transparent 0 30%,#F8ABAD 30% 40%,#C657A0 40% 100%)}.welcome::after{display:none}}
+@keyframes wfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.wbar i{animation:none}}
+
+/* Barra da marca */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--ink);color:#fff;border-bottom:4px solid var(--brand)}
+.topbar-in{max-width:1080px;margin:0 auto;padding:9px 16px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:11px;cursor:pointer;background:none;border:0;padding:0;color:#fff;text-align:left}
+.brand .logo-tile{width:40px;height:40px}
+.brand b{font-family:var(--display);font-weight:400;font-size:21px;letter-spacing:.04em;color:#F8ABAD;line-height:1;display:block}
+.brand small{display:block;color:#E9D3DF;font-size:12.5px;line-height:1.2;margin-top:2px}
+.topbar .sp{flex:1}
+.topbar .btn.ghost{color:#E9D3DF}
+.topbar .btn.ghost:hover{color:#fff}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:22px 60px;display:grid;gap:18px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 15px;cursor:pointer;font-weight:600;font-size:14.5px;white-space:nowrap;text-decoration:none;color:var(--fg)}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.pink{background:#F8ABAD;border-color:#F8ABAD;color:#1C1219}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--fg)}
+.btn.danger{color:var(--danger)}
+.btn.danger.solid{background:var(--danger);border-color:var(--danger);color:var(--surface)}
+.btn[disabled]{opacity:.55;cursor:default}
+.btn.sm{padding:6px 10px;font-size:13.5px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pagehead{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.pagehead h1{font-size:28px;line-height:1.1}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:600}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}
+.muted{color:var(--muted)}
+.banner{padding:10px 14px;border-radius:8px;background:var(--alert-bg);color:var(--alert);font-weight:600;font-size:14px;margin:0}
+
+/* Clientes */
+.finder{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:grid;gap:12px}
+.finder h1{font-size:26px}
+.finder .row{flex-wrap:wrap}
+.search{flex:1;min-width:220px;padding:13px 14px 13px 42px;border:2px solid var(--line);border-radius:10px;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23A8408A' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 13px center;font-size:16px}
+.search:focus{border-color:var(--accent);outline:none}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--brand);border-radius:var(--radius);padding:14px;text-align:left;cursor:pointer;display:grid;gap:7px;min-width:0}
+.pcard:hover{border-color:var(--accent);border-left-color:var(--accent)}
+.pcard h3{font-size:18px;overflow-wrap:anywhere}
+.pcard .meta{color:var(--muted);font-size:13.5px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px 18px}
+.kv div span{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kv div b{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.t-ok,.t-great{background:var(--ok-bg);color:var(--ok)} .t-alert{background:var(--alert-bg);color:var(--alert)} .t-danger{background:var(--danger-bg);color:var(--danger)} .t-low{background:var(--low-bg);color:var(--low)} .t-neutral{background:var(--sunken);color:var(--muted)}
+.tbl-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+.tbl th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td.num,.tbl th.num{text-align:right}
+.tbl tr:last-child td{border-bottom:0}
+.empty{text-align:center;padding:36px 16px;display:grid;gap:10px;justify-items:center}
+.empty h2{font-size:21px}
+
+/* Formulários e etapas */
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.f{display:grid;gap:5px;min-width:0;align-content:start}
+.f label{font-size:15px;font-weight:600}
+.f input,.f select,.f textarea{width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:9px;background:var(--bg);font-variant-numeric:tabular-nums;font-size:16px}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--accent);outline:none}
+.f textarea{min-height:110px;resize:vertical}
+.inu{position:relative}
+.inu input{padding-right:58px}
+.inu em{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;font-size:13px;color:var(--muted);pointer-events:none}
+.f .hint{font-size:13px;color:var(--muted);line-height:1.35}
+.f.wide{grid-column:1/-1}
+.stack{display:grid;gap:16px}
+.stepper{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.st{flex:1 0 auto;display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 5px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.st i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--sunken);font-style:normal;font-size:12.5px}
+.st.done{color:var(--fg)} .st.done i{background:#F8ABAD;color:#1C1219}
+.st.cur{border-color:var(--accent);color:var(--accent)} .st.cur i{background:var(--accent);color:var(--accent-fg)}
+.progress{height:6px;border-radius:3px;background:var(--sunken);overflow:hidden}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,#F8ABAD,var(--brand))}
+.stepcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;display:grid;gap:16px}
+.stepcard h2{font-size:24px}
+.stepcard .lead{margin:0;color:var(--muted);max-width:68ch}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);vertical-align:middle;margin-left:6px}
+.tip{background:var(--accent-soft);border-radius:10px;padding:11px 14px;font-size:14px}
+.tip b{color:var(--accent)}
+.live{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.live div{background:var(--sunken);border-radius:10px;padding:10px 12px}
+.live span{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.live b{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.navbar{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.navbar .row{gap:8px}
+.review{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.rv{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:6px;align-content:start}
+.rv header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rv h3{font-size:16px}
+.rv dl{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:0;font-size:14px}
+.rv dt{color:var(--muted)} .rv dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;z-index:50;max-width:calc(100% - 32px)}
+.rtool{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.rtool select{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.sharebox{display:grid;gap:8px}
+.sharebox textarea{width:100%;min-height:150px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:13.5px}
+.paper-wrap{overflow-x:auto;padding-bottom:4px}
+
+/* ===== Relatório (folha clara em qualquer tema) ===== */
+.rpt{--p-bg:#FFFFFF;--p-fg:#1C1219;--p-muted:#6A5763;--p-line:#EBDDE5;--p-soft:#FAF1F6;--p-acc:#A8408A;--p-brand:#C657A0;--p-pink:#F8ABAD;
+  --p-ok:#2F7D4F;--p-okb:#DDF1E4;--p-al:#8F5B00;--p-alb:#FCEFD3;--p-dg:#A8322A;--p-dgb:#F8DEDA;--p-lo:#2B5FA6;--p-lob:#DCE7F7;
+  background:var(--p-bg);color:var(--p-fg);font-family:"Rubik","Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.45;
+  max-width:820px;margin:0 auto;border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.14);color-scheme:light}
+.rpt *{box-sizing:border-box}
+.rpt h2,.rpt h3{font-family:"Rubik",Arial,sans-serif;font-weight:600;margin:0}
+.rpt-block{padding:18px 28px;background:var(--p-bg)}
+.rpt-head{background:#0B0709;color:#fff;padding:22px 28px;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;border-bottom:6px solid #C657A0;position:relative}
+.rpt-head .idt{display:flex;gap:14px;align-items:center}
+.rpt-head .lt{width:58px;height:58px;border-radius:10px;background:#C657A0;display:grid;place-items:center;flex:none}
+.rpt-head .lt img{width:62%;height:auto;display:block}
+.rpt-head .nm{font-family:"Anton","Haettenschweiler","Impact",sans-serif;font-size:24px;letter-spacing:.04em;color:#F8ABAD;line-height:1}
+.rpt-head .sb{font-size:13px;color:#fff;margin-top:3px}
+.rpt-head .rg{font-size:12px;color:#E2CCD8;margin-top:2px}
+.rpt-head .tt{text-align:right}
+.rpt-head .tt h2{font-family:"Anton","Impact",sans-serif;font-weight:400;font-size:22px;letter-spacing:.03em;color:#fff;line-height:1.05}
+.rpt-head .tt div{font-size:12.5px;color:#E2CCD8;margin-top:4px}
+@media (max-width:620px){.rpt-head .tt{text-align:left}}
+.rpt-sec{font-size:19px;color:var(--p-acc);margin-bottom:10px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rpt-sec::before{content:"";width:5px;height:18px;background:var(--p-pink);border-radius:2px;align-self:center}
+.rpt-sec small{font-size:12.5px;color:var(--p-muted);font-weight:400}
+.rpt-id{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 18px;background:var(--p-soft);border-radius:8px;padding:12px 14px}
+@media (max-width:620px){.rpt-id{grid-template-columns:repeat(2,minmax(0,1fr))}.rpt-block,.rpt-head{padding-left:16px;padding-right:16px}}
+.rpt-id span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--p-muted)}
+.rpt-id b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rpt table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.rpt .sum th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--p-muted);text-align:right;padding:6px 8px;border-bottom:1px solid var(--p-line);font-weight:600}
+.rpt .sum th:first-child,.rpt .sum td:first-child{text-align:left}
+.rpt .sum td{padding:7px 8px;border-bottom:1px solid var(--p-line);text-align:right}
+.rpt .sum td small{color:var(--p-muted)}
+.d-good{color:var(--p-ok);font-weight:600} .d-bad{color:var(--p-dg);font-weight:600} .d-neu{font-weight:500}
+.ind{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(110px,.9fr);gap:6px 14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--p-line)}
+.ind:last-child{border-bottom:0}
+.ind .nm b{font-size:15px;font-weight:600;display:block}
+.ind .nm small{color:var(--p-muted);font-size:12.5px}
+.ind .val{font-size:18px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;line-height:1.2}
+.ind .val small{display:block;font-size:12.5px;font-weight:400;color:var(--p-muted)}
+.ind .ev{text-align:center}
+.ind .bar{grid-column:1/-1}
+@media (max-width:620px){.ind{grid-template-columns:minmax(0,1fr) auto}.ind .ev{grid-column:1/-1;text-align:left}}
+.pchip{display:inline-block;padding:4px 10px;border-radius:999px;font-weight:600;font-size:13px;line-height:1.2}
+.pc-ok,.pc-great{background:var(--p-okb);color:var(--p-ok)} .pc-alert{background:var(--p-alb);color:var(--p-al)} .pc-danger{background:var(--p-dgb);color:var(--p-dg)} .pc-low{background:var(--p-lob);color:var(--p-lo)} .pc-neutral{background:var(--p-soft);color:var(--p-muted)}
+.rb{position:relative;padding-top:22px;padding-bottom:16px}
+.rb-track{display:flex;height:9px;border-radius:5px;overflow:hidden}
+.rb-seg{height:100%}
+.sg-ok,.sg-great{background:#9FD6B2} .sg-alert{background:#F3D08A} .sg-danger{background:#EBA79F} .sg-low{background:#A9C3EA}
+.rb-mk{position:absolute;top:0;transform:translateX(-50%);font-size:11.5px;font-weight:600;white-space:nowrap;display:flex;flex-direction:column;align-items:center;line-height:1}
+.rb-mk i{display:block;width:2px;height:16px;background:var(--p-fg);margin-top:2px;border-radius:1px}
+.rb-tk{position:absolute;bottom:0;transform:translateX(-50%);font-size:10.5px;color:var(--p-muted);white-space:nowrap}
+.mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:620px){.mgrid{grid-template-columns:minmax(0,1fr)}}
+.mt td,.mt th{padding:5px 6px;border-bottom:1px solid var(--p-line);text-align:right;font-size:13.5px}
+.mt td:first-child,.mt th:first-child{text-align:left}
+.mt th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--p-muted);font-weight:600}
+.mt h3{font-size:15px;margin-bottom:4px}
+.obs{background:var(--p-soft);border-radius:8px;padding:12px 14px;white-space:pre-wrap}
+.chart{border:1px solid var(--p-line);border-radius:8px;padding:12px 12px 10px;background:#fff}
+.chart h3{font-size:15px;text-transform:uppercase;letter-spacing:.04em}
+.chart p{margin:0 0 6px;font-size:12.5px;color:var(--p-muted)}
+.chart svg{display:block;width:100%;height:auto}
+.lg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;margin-top:4px}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.lg i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:620px){.cgrid{grid-template-columns:minmax(0,1fr)}}
+.rpt-foot{font-size:11.5px;color:var(--p-muted);border-top:1px solid var(--p-line)}
+.rpt-foot p{margin:0 0 6px}
+.rpt-foot .sig{color:var(--p-fg);font-size:12.5px}
+.note{font-size:12px;color:var(--p-muted);margin-top:6px}
+@media (prefers-reduced-motion:no-preference){.toast{animation:tin .18s ease-out}@keyframes tin{from{transform:translate(-50%,8px);opacity:.4}}}
+
+/* ===== Login ===== */
+.auth{min-height:100%;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:var(--bg)}
+.auth-brand{background:#0B0709;color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding-inline:clamp(24px,6vw,72px);padding-block:48px;gap:18px}
+.auth-brand::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 0 74%,#F8ABAD 74% 79%,#C657A0 79% 100%)}
+.auth-brand>*{position:relative;z-index:1;max-width:420px}
+.auth-brand .logo-tile{width:96px;height:96px;border-radius:18px;box-shadow:0 0 0 4px #F8ABAD}
+.auth-brand .nm{font-family:var(--display);font-size:clamp(34px,5vw,52px);letter-spacing:.03em;color:#F8ABAD;line-height:1}
+.auth-brand .sb{font-size:18px;color:#fff;margin-top:-8px}
+.auth-brand .rg{font-size:14px;color:#E2CCD8}
+.auth-brand p{margin:0;color:#E9D3DF;max-width:34ch}
+.auth-main{display:grid;place-items:center;padding-inline:16px;padding-block:40px}
+.auth-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;display:grid;gap:16px}
+.auth-card h1{font-size:24px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--sunken);border-radius:10px;padding:4px;gap:4px}
+.tabs button{border:0;background:transparent;border-radius:8px;padding:9px;font-weight:600;cursor:pointer;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.auth-card form{display:grid;gap:14px}
+.auth-card .btn.pri{width:100%;padding:13px}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;font-size:15px}
+.gbtn:hover{border-color:var(--accent)}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;font-size:14px;justify-self:start}
+.msg{padding:10px 12px;border-radius:8px;font-size:14px;margin:0}
+.msg.err{background:var(--danger-bg);color:var(--danger)} .msg.ok{background:var(--ok-bg);color:var(--ok)}
+@media (max-width:800px){.auth{grid-template-columns:minmax(0,1fr)}.auth-brand{padding-block:28px;flex-direction:row;align-items:center;flex-wrap:wrap;gap:14px}.auth-brand::before{background:linear-gradient(115deg,transparent 0 88%,#F8ABAD 88% 92%,#C657A0 92% 100%)}.auth-brand .logo-tile{width:58px;height:58px}.auth-brand .nm{font-size:26px}.auth-brand>*{max-width:calc(100% - 40px)}.auth-brand .sb{margin-top:0;font-size:15px}.auth-brand p,.auth-brand .rg{display:none}.auth-main{place-items:start center;padding-block:24px 40px}}
+.user{display:flex;align-items:center;gap:8px;color:#E9D3DF;font-size:13px}
+.user span{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:640px){.user span{display:none}}
+/* Sugestões */
+.agua{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;background:#FDF0F6;border:1px solid #F3CFE2;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.agua .gota{width:46px;height:46px}
+.agua b.big{font-size:26px;color:#A8408A;font-weight:700;line-height:1;display:block}
+.agua small{display:block;color:var(--p-muted);font-size:12.5px;margin-top:4px}
+.sug{display:grid;gap:10px}
+.sg{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--p-line)}
+.sg:last-child{border-bottom:0}
+.sg i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:14px}
+.sg i.pr-alta{background:var(--p-dgb);color:var(--p-dg)} .sg i.pr-media{background:var(--p-alb);color:var(--p-al)} .sg i.pr-ok{background:var(--p-okb);color:var(--p-ok)} .sg i.pr-info{background:#F8E3EF;color:#A8408A}
+.sg b{display:block;font-size:14.5px;font-weight:600}
+.sg p{margin:2px 0 0;font-size:13.5px;color:#3A2F36}
+</style>
+</head>
+<body>
+<header class="topbar" id="topbar" hidden><div class="topbar-in">
+  <button class="brand" data-act="home" aria-label="Ir para clientes">
+    <span class="logo-tile"><img src="logo.png" alt=""></span>
+    <span><b id="brandName">JOYCE FERNANDES</b><small id="brandSub">Personal Trainer</small></span>
+  </button>
+  <span class="sp"></span>
+  <div class="user"><span id="userLabel"></span></div>
+  <button class="btn ghost" data-act="config">Configurações</button>
+  <button class="btn ghost" data-act="logout">Sair</button>
+</div></header>
+<main id="app" aria-live="polite"></main>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div id="toast" class="toast" hidden></div>
+
+<script type="module">
+/* ============ Utilidades ============ */
+const LOGO = 'logo.png';
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { if (v === '' || v == null) return null; if (typeof v === 'number') return isFinite(v) ? v : null; const n = Number(String(v).trim().replace(',', '.')); return isFinite(n) ? n : null; };
+const fmt = (v, d=1) => v == null || !isFinite(v) ? '-' : Number(v).toLocaleString('pt-BR', {minimumFractionDigits:d, maximumFractionDigits:d});
+const fin = v => v == null || v === '' ? '' : String(v).replace('.', ',');
+const sgn = (v, d=1) => v == null ? '-' : (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d);
+const fdate = iso => { if (!iso) return '-'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; };
+const fdateShort = iso => { if (!iso) return '-'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y.slice(2)}`; };
+const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); };
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+function ageAt(birth, iso){ if(!birth||!iso) return null; const b=new Date(birth+'T12:00'), d=new Date(iso+'T12:00'); let a=d.getFullYear()-b.getFullYear(); const m=d.getMonth()-b.getMonth(); if(m<0||(m===0&&d.getDate()<b.getDate())) a--; return a; }
+function diffMD(a, b){
+  const A=new Date(a+'T12:00'), B=new Date(b+'T12:00'); let m=(B.getFullYear()-A.getFullYear())*12+(B.getMonth()-A.getMonth()); let d=B.getDate()-A.getDate();
+  if(d<0){ m--; d+=new Date(B.getFullYear(), B.getMonth(), 0).getDate(); }
+  const y=Math.floor(m/12), mm=m%12; const parts=[]; if(y) parts.push(y+(y>1?' anos':' ano')); if(mm) parts.push(mm+(mm>1?' meses':' mês')); if(d||!parts.length) parts.push(d+(d===1?' dia':' dias'));
+  return parts.length === 3 ? `${parts[0]}, ${parts[1]} e ${parts[2]}` : parts.join(' e ');
+}
+const fphone = s => { const d = String(s||'').replace(/\D/g,''); return d.length===11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length===10 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : s||''; };
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true, 3000); }
+const clean = o => JSON.parse(JSON.stringify(o));
+
+/* ============ Definições ============ */
+const DEFAULT_CFG = { profissional:'Joyce Fernandes', titulo:'Personal Trainer', registro:'CREF 042363-G · CRN 37944', contato:'31991642077', saudacao:'', rodape:'' };
+const METODOS = { bio:'Bioimpedância', dobras7:'Dobras cutâneas (7 dobras)', outro:'Outro' };
+const MEDIDAS = [
+  ['torax','Tórax'],['cintura','Cintura'],['abdome','Abdome'],['quadril','Quadril'],
+  ['bracoE','Braço E.'],['bracoD','Braço D.'],['antebracoE','Antebraço E.'],['antebracoD','Antebraço D.'],
+  ['coxaE','Coxa E.'],['coxaD','Coxa D.'],['panturrilhaE','Panturrilha E.'],['panturrilhaD','Panturrilha D.']];
+const TRONCO = ['torax','cintura','abdome','quadril'];
+const MEMBROS = ['bracoE','bracoD','antebracoE','antebracoD','coxaE','coxaD','panturrilhaE','panturrilhaD'];
+const DOBRAS = [['peitoral','Peitoral (tórax)'],['axilar','Axilar média'],['triceps','Tríceps'],['subescapular','Subescapular'],['abdominal','Abdominal'],['suprailiaca','Supra-ilíaca'],['coxa','Coxa']];
+/* Etapas do lançamento */
+const STEPS = [
+ { key:'dados', nome:'Dados', titulo:'Dados da avaliação', lead:'Confira a data, o método e os dados básicos. Idade e altura já vêm do cadastro da cliente.', fields:[
+   {p:'data', label:'Data da avaliação', type:'date', req:true},
+   {p:'hora', label:'Hora', type:'time', hint:'Opcional. Ajuda a repetir as próximas medições no mesmo horário.'},
+   {p:'metodo', label:'Como a gordura foi medida?', type:'select', opts:METODOS, hint:'Bioimpedância: balança. Dobras: plicômetro (etapa 5).'},
+   {p:'idade', label:'Idade', unit:'anos'},
+   {p:'altura', label:'Altura', unit:'cm', hint:'Use a mesma altura cadastrada na balança.'} ]},
+ { key:'balanca', nome:'Balança', titulo:'Leitura da balança', lead:'Copie os números que aparecem na balança de bioimpedância. Só o peso é obrigatório.', tip:'<b>Antes de subir na balança:</b> em jejum, depois de urinar, pés limpos e secos, sem treino nas últimas horas. Sempre nas mesmas condições.', fields:[
+   {p:'peso', label:'Peso', unit:'kg', req:true, hint:'Botão WEIGHT/BMI.'},
+   {p:'gordura', label:'Gordura corporal', unit:'%', hint:'Botão BODY FAT/MUSCLE, valor FAT. Em avaliação por dobras, deixe em branco.'},
+   {p:'musculoEsq', label:'Músculo esquelético', unit:'%', hint:'Botão BODY FAT/MUSCLE de novo, valor MUSCLE.'},
+   {p:'visceral', label:'Gordura visceral', unit:'nível', hint:'Botão VISCERAL FAT (número de 1 a 30).'},
+   {p:'tmb', label:'Metabolismo de repouso', unit:'kcal', hint:'Botão RM kcal/BODY AGE, valor RM.'},
+   {p:'idadeCorporal', label:'Idade corporal', unit:'anos', hint:'Botão RM kcal/BODY AGE de novo.'} ]},
+ { key:'tronco', nome:'Tronco', opc:true, titulo:'Perímetros do tronco', lead:'Fita métrica justa, sem apertar a pele, sempre paralela ao chão.', fields:[
+   {p:'medidas.torax', label:'Tórax', unit:'cm', hint:'Na linha dos mamilos, ao final de uma expiração normal.'},
+   {p:'medidas.cintura', label:'Cintura', unit:'cm', hint:'Parte mais estreita entre a última costela e o osso do quadril.'},
+   {p:'medidas.abdome', label:'Abdome', unit:'cm', hint:'Na altura do umbigo.'},
+   {p:'medidas.quadril', label:'Quadril', unit:'cm', hint:'Maior volume dos glúteos, com os pés juntos.'} ]},
+ { key:'membros', nome:'Membros', opc:true, titulo:'Perímetros dos braços e pernas', lead:'Meça os dois lados. Músculos relaxados, salvo indicação.', fields:[
+   {p:'medidas.bracoD', label:'Braço direito', unit:'cm', hint:'Relaxado, no meio entre ombro e cotovelo.'},
+   {p:'medidas.bracoE', label:'Braço esquerdo', unit:'cm', hint:'Mesmo ponto do lado direito.'},
+   {p:'medidas.antebracoD', label:'Antebraço direito', unit:'cm', hint:'Parte mais grossa, braço estendido.'},
+   {p:'medidas.antebracoE', label:'Antebraço esquerdo', unit:'cm'},
+   {p:'medidas.coxaD', label:'Coxa direita', unit:'cm', hint:'No meio entre a virilha e o joelho, em pé.'},
+   {p:'medidas.coxaE', label:'Coxa esquerda', unit:'cm'},
+   {p:'medidas.panturrilhaD', label:'Panturrilha direita', unit:'cm', hint:'Parte mais grossa, em pé.'},
+   {p:'medidas.panturrilhaE', label:'Panturrilha esquerda', unit:'cm'} ]},
+ { key:'dobras', nome:'Dobras', opc:true, titulo:'Dobras cutâneas', lead:'Lado direito do corpo, com plicômetro. Preenchendo as 7 dobras, o app calcula a gordura sozinho.', tip:'<b>Dica:</b> meça cada ponto 2 ou 3 vezes e anote a média. Solte o plicômetro e leia em 2 segundos.', fields:[
+   {p:'dobras.peitoral', label:'Peitoral', unit:'mm', hint:'Diagonal, entre a axila e o mamilo.'},
+   {p:'dobras.axilar', label:'Axilar média', unit:'mm', hint:'Vertical, abaixo da axila, na altura do fim do esterno.'},
+   {p:'dobras.triceps', label:'Tríceps', unit:'mm', hint:'Vertical, atrás do braço, no meio entre ombro e cotovelo.'},
+   {p:'dobras.subescapular', label:'Subescapular', unit:'mm', hint:'Diagonal, 2 cm abaixo da ponta da escápula.'},
+   {p:'dobras.abdominal', label:'Abdominal', unit:'mm', hint:'Vertical, 2 cm ao lado direito do umbigo.'},
+   {p:'dobras.suprailiaca', label:'Supra-ilíaca', unit:'mm', hint:'Diagonal, logo acima do osso do quadril.'},
+   {p:'dobras.coxa', label:'Coxa', unit:'mm', hint:'Vertical, no meio entre a virilha e o joelho.'} ]},
+ { key:'pressao', nome:'Rotina e notas', opc:true, titulo:'Pressão arterial, treino e observações', lead:'Tudo opcional. O tempo de treino entra no cálculo da água diária; as observações aparecem no relatório.', tip:'<b>Para medir a pressão:</b> cliente sentada, 5 minutos em repouso, braço apoiado na altura do coração.', fields:[
+   {p:'pas', label:'Pressão sistólica (máxima)', unit:'mmHg', hint:'O número maior. Ex.: 120.'},
+   {p:'pad', label:'Pressão diastólica (mínima)', unit:'mmHg', hint:'O número menor. Ex.: 80.'},
+   {p:'treinoMin', label:'Treino por dia', unit:'min', hint:'Tempo médio de exercício nos dias de treino. Ex.: 60.'},
+   {p:'obs', label:'Observações para o relatório', type:'textarea', wide:true, hint:'Objetivos, orientações, metas para a próxima avaliação.'} ]},
+ { key:'revisao', nome:'Revisão', titulo:'Revisão final', lead:'Confira os dados. Para corrigir algo, toque em Editar no grupo. Depois é só gerar o relatório.' }
+];
+
+
+/* ============ Cálculos ============ */
+function jp7(sexo, idade, dob){
+  const vals = DOBRAS.map(([k]) => num(dob?.[k])); if (vals.some(v => v == null) || idade == null) return null;
+  const S = vals.reduce((a,b)=>a+b,0);
+  const D = sexo === 'F' ? 1.097 - 0.00046971*S + 0.00000056*S*S - 0.00012828*idade : 1.112 - 0.00043499*S + 0.00000055*S*S - 0.00028826*idade;
+  return 495/D - 450;
+}
+function harrisBenedict(sexo, peso, altCm, idade){ if(peso==null||altCm==null||idade==null) return null;
+  return sexo==='F' ? 447.593 + 9.247*peso + 3.098*altCm - 4.330*idade : 88.362 + 13.397*peso + 4.799*altCm - 5.677*idade; }
+function derive(e, p){
+  const sexo = p?.sexo || 'F';
+  const idade = num(e.idade) ?? ageAt(p?.nascimento, e.data);
+  const alt = num(e.altura) ?? num(p?.altura);
+  const peso = num(e.peso); const h = alt ? alt/100 : null;
+  const imc = peso && h ? peso/(h*h) : null;
+  const somaDobras = DOBRAS.every(([k]) => num(e.dobras?.[k]) != null) ? DOBRAS.reduce((a,[k]) => a + num(e.dobras[k]), 0) : null;
+  const gJP = jp7(sexo, idade, e.dobras);
+  let gord = num(e.gordura), gordCalc = false;
+  if (gord == null && gJP != null) { gord = gJP; gordCalc = true; }
+  const mg = gord != null && peso ? peso*gord/100 : null; const mm = mg != null ? peso - mg : null;
+  const me = num(e.musculoEsq); const meKg = me != null && peso ? peso*me/100 : null;
+  const cin = num(e.medidas?.cintura), qua = num(e.medidas?.quadril); const rcq = cin && qua ? cin/qua : null;
+  const hb = harrisBenedict(sexo, peso, alt, idade);
+  return { sexo, idade, alt, peso, imc, gord, gordCalc, gJP, mg, mm, me, meKg, rcq, hb, somaDobras,
+    visceral: num(e.visceral), tmb: num(e.tmb), idadeCorporal: num(e.idadeCorporal), pas: num(e.pas), pad: num(e.pad),
+    pesoMin: h ? 18.5*h*h : null, pesoMax: h ? 24.9*h*h : null };
+}
+function classify(v, ref){ if (v == null) return null; let i = 0; while (i < ref.cuts.length && v >= ref.cuts[i]) i++; return { i, label: ref.labels[i], tone: ref.tones[i] }; }
+const ageIdx3 = (idade, b1, b2) => idade == null || idade < b1 ? 0 : idade < b2 ? 1 : 2;
+function refIMC(){ return { cuts:[18.5,25,30,35,40], labels:['Abaixo do peso','Normal','Sobrepeso','Obesidade grau I','Obesidade grau II','Obesidade grau III'], tones:['low','ok','alert','danger','danger','danger'], domain:[15,42], ticks:[18.5,25,30,35,40], refText:'18,5 a 24,9 kg/m²' }; }
+function refGordura(sexo, idade){
+  const t = (sexo==='F' ? [[21,33,39],[23,34,40],[24,36,42]] : [[8,20,25],[11,22,28],[13,25,30]])[ageIdx3(idade,40,60)];
+  return { cuts:t, labels:['Baixo','Normal','Alto','Muito alto'], tones:['low','ok','alert','danger'], domain:[Math.max(0,t[0]-8), t[2]+12], ticks:t, refText:`${fmt(t[0],0)} a ${fmt(t[1]-0.1)} %` };
+}
+function refME(sexo, idade){
+  const t = (sexo==='F' ? [[24.3,30.4,35.4],[24.1,30.2,35.2],[23.9,30.0,35.0]] : [[33.3,39.4,44.1],[33.1,39.2,43.9],[32.9,39.0,43.7]])[ageIdx3(idade,40,60)];
+  return { cuts:t, labels:['Baixo','Normal','Alto','Muito alto'], tones:['alert','ok','great','great'], domain:[t[0]-10, t[2]+8], ticks:t, refText:`${fmt(t[0])} a ${fmt(t[1]-0.1)} %` };
+}
+function refVisceral(){ return { cuts:[10,15], labels:['Normal','Alto','Muito alto'], tones:['ok','alert','danger'], domain:[1,30], ticks:[10,15], refText:'1 a 9' }; }
+function refRCQ(sexo, idade){
+  const rows = sexo==='F' ? [[.71,.77,.82],[.72,.78,.84],[.73,.79,.87],[.74,.81,.88],[.76,.83,.90]] : [[.83,.88,.94],[.84,.91,.96],[.88,.95,1.00],[.90,.96,1.02],[.91,.98,1.03]];
+  const r = rows[idade == null ? 1 : Math.min(4, Math.max(0, Math.floor((idade-20)/10)))];
+  return { cuts:[r[0], r[1]+0.005, r[2]+0.005], labels:['Risco baixo','Risco moderado','Risco alto','Risco muito alto'], tones:['ok','alert','danger','danger'], domain:[r[0]-0.12, r[2]+0.08], ticks:[r[0], r[1], r[2]], refText:`risco baixo abaixo de ${fmt(r[0],2)}` };
+}
+function classPA(s, d){ if (s == null && d == null) return null;
+  const cs = s==null?0: s<120?0: s<130?1: s<140?2: s<160?3: s<180?4:5;
+  const cd = d==null?0: d<80?0: d<85?1: d<90?2: d<100?3: d<110?4:5; const c = Math.max(cs, cd);
+  return { label:['Ótima','Normal','Pré-hipertensão','Hipertensão estágio 1','Hipertensão estágio 2','Hipertensão estágio 3'][c], tone:['ok','ok','alert','danger','danger','danger'][c] };
+}
+
+
+/* ============ Estado e persistência ============ */
+const FB_CFG = window.FIREBASE_CONFIG || {};
+const DEMO = !FB_CFG.apiKey || /COLE|SUA_|xxx/i.test(FB_CFG.apiKey);
+const state = { user:null, patients:[], evals:[], cfgDoc:{}, view:'boot', authTab:'entrar', authMsg:null, pid:null, eid:null, q:'', confirm:null, loaded:{p:false,e:false}, draft:null, step:0 };
+window.__fc = { state }; // usado apenas em testes
+const cfg = () => ({ ...DEFAULT_CFG, ...Object.fromEntries(Object.entries(state.cfgDoc).filter(([,v]) => v !== '' && v != null)) });
+let FB = null, auth = null, fdb = null, unsubs = [];
+
+const DEMO_KEY = 'fc-demo-v1';
+const demoLoad = () => { try { return JSON.parse(localStorage.getItem(DEMO_KEY)) || {}; } catch { return {}; } };
+const demoSave = () => { try { localStorage.setItem(DEMO_KEY, JSON.stringify({ clientes: state.patients, avaliacoes: state.evals, config: state.cfgDoc, user: state.user })); } catch {} };
+
+const store = {
+  async set(col, id, obj){
+    obj = clean(obj);
+    if (!DEMO) { await FB.setDoc(FB.doc(fdb, 'users', state.user.uid, col, id), obj); return; }
+    if (col === 'config') state.cfgDoc = obj;
+    else { const arr = col==='clientes'?state.patients:state.evals; const i=arr.findIndex(x=>x.id===id); const v={id,...obj}; i>=0?arr.splice(i,1,v):arr.push(v); }
+    demoSave();
+  },
+  async del(col, id){
+    if (!DEMO) { await FB.deleteDoc(FB.doc(fdb, 'users', state.user.uid, col, id)); return; }
+    const arr = col==='clientes'?state.patients:state.evals; const i=arr.findIndex(x=>x.id===id); if(i>=0) arr.splice(i,1); demoSave();
+  }
+};
+const EDITING = ['form','pform','config','welcome','login'];
+function softRender(){ if (!EDITING.includes(state.view)) render(); updateBrand(); }
+function updateBrand(){ const c = cfg(); $('#brandName').textContent = (c.profissional||'').toUpperCase(); $('#brandSub').textContent = c.titulo || ''; $('#userLabel').textContent = state.user ? (state.user.displayName || state.user.email || '') : ''; }
+
+async function loadFirebase(){
+  const V = '10.12.2', base = `https://www.gstatic.com/firebasejs/${V}/`;
+  const [app, a, f] = await Promise.all([import(base+'firebase-app.js'), import(base+'firebase-auth.js'), import(base+'firebase-firestore.js')]);
+  FB = { ...app, ...a, ...f };
+  const fapp = FB.initializeApp(FB_CFG);
+  auth = FB.getAuth(fapp); auth.languageCode = 'pt';
+  try { fdb = FB.initializeFirestore(fapp, { localCache: FB.persistentLocalCache({ tabManager: FB.persistentMultipleTabManager() }) }); }
+  catch { fdb = FB.getFirestore(fapp); }
+  try { await FB.getRedirectResult(auth); } catch (e) { state.authMsg = { err:true, text: authErr(e) }; }
+  FB.onAuthStateChanged(auth, u => { if (u) onLogin({ uid:u.uid, email:u.email, displayName:u.displayName }); else onLogout(); });
+}
+function subscribe(){
+  unsubs.forEach(f => f()); unsubs = [];
+  const uid = state.user.uid; const onErr = e => { toast('Erro ao ler os dados: ' + (e?.message || e)); };
+  unsubs.push(FB.onSnapshot(FB.collection(fdb, 'users', uid, 'clientes'), s => { state.patients = s.docs.map(d => ({id:d.id, ...d.data()})); state.loaded.p = true; softRender(); }, onErr));
+  unsubs.push(FB.onSnapshot(FB.collection(fdb, 'users', uid, 'avaliacoes'), s => { state.evals = s.docs.map(d => ({id:d.id, ...d.data()})); state.loaded.e = true; softRender(); }, onErr));
+  unsubs.push(FB.onSnapshot(FB.doc(fdb, 'users', uid, 'config', 'geral'), s => { state.cfgDoc = s.exists() ? {...s.data()} : {}; softRender(); }, onErr));
+}
+function onLogin(user){
+  state.user = user;
+  if (DEMO) { const d = demoLoad(); state.patients = d.clientes || []; state.evals = d.avaliacoes || []; state.cfgDoc = d.config || {}; state.loaded = {p:true, e:true}; demoSave(); }
+  else { state.loaded = {p:false, e:false}; subscribe(); }
+  go('welcome', null);
+}
+function onLogout(){ unsubs.forEach(f => f()); unsubs = []; state.user = null; state.patients = []; state.evals = []; state.cfgDoc = {}; state.draft = null; go('login', null); }
+function authErr(e){
+  const m = { 'auth/invalid-credential':'E-mail ou senha incorretos.', 'auth/wrong-password':'E-mail ou senha incorretos.', 'auth/user-not-found':'Não existe conta com esse e-mail. Use “Criar novo login”.',
+    'auth/email-already-in-use':'Já existe uma conta com esse e-mail. Use “Entrar” ou “Esqueci a senha”.', 'auth/weak-password':'A senha precisa ter pelo menos 6 caracteres.', 'auth/invalid-email':'E-mail inválido.',
+    'auth/missing-password':'Digite a senha.', 'auth/popup-closed-by-user':'A janela do Google foi fechada antes de concluir.', 'auth/cancelled-popup-request':'Login com Google cancelado.',
+    'auth/too-many-requests':'Muitas tentativas. Aguarde alguns minutos e tente de novo.', 'auth/network-request-failed':'Sem conexão com a internet.',
+    'auth/unauthorized-domain':'Este endereço não está autorizado no Firebase. Veja o passo 6 do guia de instalação.', 'auth/operation-not-allowed':'Este tipo de login não está ativado no Firebase. Veja o passo 3 do guia de instalação.' };
+  return m[e?.code] || ('Não foi possível entrar: ' + (e?.message || e));
+}
+async function boot(){
+  if (DEMO) { const d = demoLoad(); if (d.user) { onLogin(d.user); return; } go('login', null); return; }
+  render();
+  try { await loadFirebase(); }
+  catch (e) { state.authMsg = { err:true, text:'Não foi possível carregar o Firebase. Verifique a internet e o arquivo config.js.' }; go('login', null); }
+}
+
+const patientById = id => state.patients.find(p => p.id === id);
+const evalsOf = pid => state.evals.filter(e => e.pacienteId === pid).sort((a,b) => (a.data+(a.hora||'')).localeCompare(b.data+(b.hora||'')));
+function go(view, pid=state.pid, eid=null){ clearTimeout(go._w); state.view=view; state.pid=pid; state.eid=eid; state.confirm=null; render(); window.scrollTo(0,0); }
+
+/* ============ Telas ============ */
+function render(){
+  const app = $('#app'); const v = state.view;
+  $('#topbar').hidden = ['welcome','login','boot'].includes(v);
+  document.body.style.height = '';
+  if (v === 'boot') { app.className = 'wrap'; app.innerHTML = `<div class="panel empty"><p class="muted">Carregando…</p></div>`; return; }
+  if (v === 'login') { app.className = ''; app.style.height = '100%'; document.documentElement.style.height = '100%'; app.innerHTML = viewLogin(); return; }
+  if (v === 'welcome') { app.className = ''; app.style.height = '100%'; app.innerHTML = viewWelcome(); scheduleWelcome(); return; }
+  app.className = 'wrap'; app.style.height = '';
+  let h = '';
+  if (DEMO) h += `<p class="banner">Modo demonstração: o Firebase ainda não foi configurado, então os dados ficam só neste navegador. Siga o guia de instalação para ativar o login real.</p>`;
+  if (v === 'lista') h += viewLista();
+  else if (v === 'paciente') h += viewPaciente();
+  else if (v === 'pform') h += viewPForm();
+  else if (v === 'form') h += viewWizard();
+  else if (v === 'relatorio') h += viewRelatorio();
+  else if (v === 'config') h += viewConfig();
+  app.innerHTML = h;
+  if (v === 'relatorio') { const ta=$('#waText'); if(ta) ta.value = ta.dataset.v; }
+  if (v === 'form') { updateLive(); const first = app.querySelector('.stepcard input, .stepcard select'); if (first && state._focus) { first.focus(); state._focus = false; } }
+  if (v === 'lista' && state._focusSearch) { $('#busca')?.focus(); state._focusSearch = false; }
+  updateBrand();
+}
+const GLOGO = `<svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
+function viewLogin(){
+  const c = cfg(); const t = state.authTab; const m = state.authMsg;
+  const msg = m ? `<p class="msg ${m.err?'err':'ok'}" role="${m.err?'alert':'status'}">${esc(m.text)}</p>` : '';
+  let form = '';
+  if (t === 'entrar') form = `<form id="fLogin" novalidate>
+      <div class="f"><label for="l_email">E-mail</label><input id="l_email" type="email" autocomplete="email" required></div>
+      <div class="f"><label for="l_pass">Senha</label><input id="l_pass" type="password" autocomplete="current-password" required></div>
+      <button class="btn pri" type="submit">Entrar</button><button class="linkbtn" type="button" data-act="tab" data-t="reset">Esqueci a senha</button></form>`;
+  else if (t === 'criar') form = `<form id="fSignup" novalidate>
+      <div class="f"><label for="s_nome">Seu nome</label><input id="s_nome" autocomplete="name" required></div>
+      <div class="f"><label for="s_email">E-mail</label><input id="s_email" type="email" autocomplete="email" required></div>
+      <div class="f"><label for="s_pass">Senha</label><input id="s_pass" type="password" autocomplete="new-password" required><span class="hint">Mínimo de 6 caracteres.</span></div>
+      <div class="f"><label for="s_pass2">Repita a senha</label><input id="s_pass2" type="password" autocomplete="new-password" required></div>
+      <button class="btn pri" type="submit">Criar login</button></form>`;
+  else form = `<form id="fReset" novalidate><p class="muted" style="margin:0">Digite seu e-mail. Você vai receber um link para criar uma nova senha.</p>
+      <div class="f"><label for="r_email">E-mail</label><input id="r_email" type="email" autocomplete="email" required></div>
+      <button class="btn pri" type="submit">Enviar link</button><button class="linkbtn" type="button" data-act="tab" data-t="entrar">← Voltar para o login</button></form>`;
+  return `<section class="auth">
+   <div class="auth-brand"><span class="logo-tile"><img src="${LOGO}" alt="Logotipo"></span><div><div class="nm">${esc((c.profissional||'').toUpperCase())}</div></div><div class="sb">${esc(c.titulo)}</div><div class="rg">${esc(c.registro)}</div><p>Avaliação corporal, relatórios de evolução e acompanhamento das suas clientes.</p></div>
+   <div class="auth-main"><div class="auth-card">
+     <h1>${t==='reset'?'Recuperar senha':'Acesse sua conta'}</h1>
+     ${t!=='reset'?`<div class="tabs" role="tablist"><button type="button" role="tab" aria-selected="${t==='entrar'}" data-act="tab" data-t="entrar">Entrar</button><button type="button" role="tab" aria-selected="${t==='criar'}" data-act="tab" data-t="criar">Criar novo login</button></div>`:''}
+     ${msg}${form}
+     ${t!=='reset'?`<div class="or">ou</div><button type="button" class="gbtn" data-act="google">${GLOGO}Entrar com Google</button>`:''}
+   </div></div></section>`;
+}
+function viewWelcome(){
+  const c = cfg(); const saud = c.saudacao || `Seja bem-vinda, ${c.profissional}!`;
+  return `<section class="welcome"><div class="wbox">
+    <div class="row" style="gap:14px"><span class="logo-tile"><img src="${LOGO}" alt="Logotipo"></span><div class="wname">${esc((c.profissional||'').toUpperCase())}<small>${esc(c.titulo)}</small></div></div>
+    <h1>${esc(saud)}</h1>
+    <p>Vamos iniciar os trabalhos.</p>
+    <div class="wgo"><button class="btn big pink" data-act="start">Começar</button><span class="wbar" aria-hidden="true"><i></i></span></div>
+  </div></section>`;
+}
+function scheduleWelcome(){ clearTimeout(go._w); go._w = setTimeout(() => { if (state.view === 'welcome') { state._focusSearch = true; go('lista', null); } }, 3600); }
+function lastEvalChip(p){
+  const ev = evalsOf(p.id); if (!ev.length) return '<span class="chip t-neutral">Sem avaliações</span>';
+  const e = ev.at(-1), d = derive(e, p); if (d.gord == null) return `<span class="chip t-neutral">Última: ${fdate(e.data)}</span>`;
+  const c = classify(d.gord, refGordura(d.sexo, d.idade));
+  return `<span class="chip t-${c.tone}">Gordura ${fmt(d.gord)}% · ${c.label}</span>`;
+}
+function viewLista(){
+  const loading = state.mode === 'loading' || (state.mode === 'db' && !(state.loaded.p && state.loaded.e));
+  const q = state.q.trim().toLowerCase();
+  const list = state.patients.filter(p => !q || (p.nome||'').toLowerCase().includes(q)).sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+  let h = `<section class="finder"><div class="eyebrow">Clientes</div><h1>Buscar ou cadastrar cliente</h1>
+    <div class="row"><input id="busca" class="search" type="search" placeholder="Digite o nome da cliente" value="${esc(state.q)}" aria-label="Buscar cliente pelo nome" autocomplete="off"><button class="btn pri" data-act="novoPaciente" style="padding:13px 18px">+ Cadastrar nova cliente</button></div></section>`;
+  if (loading) return h + `<div class="panel empty"><p class="muted">Carregando clientes…</p></div>`;
+  if (!state.patients.length) return h + `<div class="panel empty"><h2>Nenhuma cliente cadastrada ainda</h2><p class="muted">Comece cadastrando nome, sexo e altura. Depois é só lançar a avaliação, etapa por etapa, e gerar o relatório.</p><button class="btn pri" data-act="novoPaciente">Cadastrar a primeira cliente</button></div>`;
+  h += `<div class="row" style="justify-content:space-between"><span class="muted">${q ? `${list.length} ${list.length===1?'resultado':'resultados'} para “${esc(state.q)}”` : `${state.patients.length} ${state.patients.length===1?'cliente cadastrada':'clientes cadastradas'}`}</span></div>`;
+  h += `<div class="plist">` + (list.map(p => {
+    const ev = evalsOf(p.id); const last = ev.at(-1);
+    const idade = ageAt(p.nascimento, today()) ?? (last ? num(last.idade) : null);
+    return `<button class="pcard" data-act="abrir" data-id="${p.id}"><h3>${esc(p.nome)}</h3>
+      <div class="meta">${p.sexo==='M'?'Masculino':'Feminino'}${idade!=null?' · '+idade+' anos':''}${p.altura?' · '+fmt(num(p.altura),0)+' cm':''}</div>
+      <div class="meta">${ev.length} ${ev.length===1?'avaliação':'avaliações'}${last?' · última em '+fdate(last.data):''}</div>
+      <div>${lastEvalChip(p)}</div></button>`; }).join('') || `<div class="panel empty" style="grid-column:1/-1"><p>Nenhuma cliente com esse nome.</p><button class="btn pri" data-act="novoPaciente">Cadastrar “${esc(state.q)}”</button></div>`) + `</div>`;
+  return h;
+}
+function viewPaciente(){
+  const p = patientById(state.pid); if (!p) return `<div class="panel empty"><p>Cliente não encontrada.</p><button class="btn" data-act="home">Voltar</button></div>`;
+  const ev = evalsOf(p.id); const idadeAtual = ageAt(p.nascimento, today());
+  let h = `<div><button class="btn ghost sm" data-act="home">← Clientes</button></div>
+  <div class="pagehead"><div><div class="eyebrow">Cliente</div><h1>${esc(p.nome)}</h1></div>
+   <div class="row"><button class="btn pri" data-act="novaAval">+ Nova avaliação</button><button class="btn" data-act="editPaciente">Editar cadastro</button>
+   ${state.confirm==='p:'+p.id ? `<button class="btn danger solid" data-act="delPacienteOk">Excluir cliente e ${ev.length} ${ev.length===1?'avaliação':'avaliações'}</button><button class="btn ghost" data-act="cancel">Cancelar</button>` : `<button class="btn ghost danger" data-act="delPaciente">Excluir</button>`}</div></div>
+  <div class="panel kv">
+    <div><span>Sexo</span><b>${p.sexo==='M'?'Masculino':'Feminino'}</b></div>
+    <div><span>Nascimento</span><b>${p.nascimento?fdate(p.nascimento)+(idadeAtual!=null?' ('+idadeAtual+' anos)':''):'Não informado'}</b></div>
+    <div><span>Altura</span><b>${p.altura?fmt(num(p.altura),1)+' cm':'-'}</b></div>
+    <div><span>WhatsApp</span><b>${esc(fphone(p.telefone))||'-'}</b></div>
+    ${p.obs?`<div style="grid-column:1/-1"><span>Observações</span><b style="font-weight:400">${esc(p.obs)}</b></div>`:''}
+  </div>`;
+  if (!ev.length) return h + `<div class="panel empty"><h2>Nenhuma avaliação ainda</h2><p class="muted">A avaliação é lançada em 7 telas curtas: dados, balança, tronco, membros, dobras, pressão e revisão.</p><button class="btn pri" data-act="novaAval">Lançar primeira avaliação</button></div>`;
+  h += `<div class="panel"><div class="pagehead" style="margin-bottom:8px"><h2 style="font-size:20px">Avaliações</h2><button class="btn sm pri" data-act="relatorio" data-id="${ev.at(-1).id}">Relatório da última</button></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Data</th><th>Método</th><th class="num">Peso</th><th class="num">IMC</th><th class="num">Gordura</th><th class="num">M. esquelético</th><th class="num">Visceral</th><th></th></tr></thead><tbody>`;
+  [...ev].reverse().forEach(e => { const d = derive(e, p);
+    h += `<tr><td>${fdate(e.data)}</td><td>${METODOS[e.metodo]||'-'}</td><td class="num">${fmt(d.peso)} kg</td><td class="num">${fmt(d.imc)}</td><td class="num">${d.gord!=null?fmt(d.gord)+' %':'-'}</td><td class="num">${d.me!=null?fmt(d.me)+' %':'-'}</td><td class="num">${d.visceral??'-'}</td>
+    <td class="num"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><button class="btn sm pri" data-act="relatorio" data-id="${e.id}">Relatório</button><button class="btn sm" data-act="editAval" data-id="${e.id}">Editar</button>${state.confirm==='e:'+e.id?`<button class="btn sm danger solid" data-act="delAvalOk" data-id="${e.id}">Confirmar</button><button class="btn sm ghost" data-act="cancel">Cancelar</button>`:`<button class="btn sm ghost danger" data-act="delAval" data-id="${e.id}">Excluir</button>`}</div></td></tr>`; });
+  return h + `</tbody></table></div></div>`;
+}
+function viewPForm(){
+  const p = state.pid ? patientById(state.pid) || {} : { nome: state.q.trim() };
+  return `<div><button class="btn ghost sm" data-act="${state.pid?'abrir':'home'}" data-id="${state.pid||''}">← Voltar</button></div>
+  <form id="pform" class="stepcard" novalidate><div><div class="eyebrow">${state.pid?'Editar cadastro':'Nova cliente'}</div><h2>${state.pid?esc(p.nome):'Cadastro da cliente'}</h2></div>
+   <p class="lead">Só o nome é obrigatório. Com a data de nascimento e a altura, o app preenche idade e altura nas avaliações.</p>
+   <div class="fields">
+   <div class="f wide"><label for="p_nome">Nome completo</label><input id="p_nome" required value="${esc(p.nome)}" autocomplete="off"></div>
+   <div class="f"><label for="p_sexo">Sexo</label><select id="p_sexo"><option value="F"${p.sexo!=='M'?' selected':''}>Feminino</option><option value="M"${p.sexo==='M'?' selected':''}>Masculino</option></select><span class="hint">Define as faixas de referência do relatório.</span></div>
+   <div class="f"><label for="p_nasc">Data de nascimento</label><input id="p_nasc" type="date" value="${esc(p.nascimento)}"></div>
+   <div class="f"><label for="p_alt">Altura</label><div class="inu"><input id="p_alt" inputmode="decimal" placeholder="165" value="${fin(p.altura)}"><em>cm</em></div></div>
+   <div class="f"><label for="p_tel">WhatsApp</label><input id="p_tel" inputmode="tel" placeholder="(31) 99999-9999" value="${esc(fphone(p.telefone))}"><span class="hint">Para enviar o resumo do relatório.</span></div>
+   <div class="f wide"><label for="p_obs">Observações</label><textarea id="p_obs" placeholder="Objetivo, rotina de treino, restrições">${esc(p.obs)}</textarea></div>
+   </div>
+   <p id="pErr" class="banner" hidden></p>
+   <div class="navbar"><button class="btn ghost" type="button" data-act="${state.pid?'abrir':'home'}" data-id="${state.pid||''}">Cancelar</button><button class="btn pri big" type="submit">${state.pid?'Salvar alterações':'Cadastrar e continuar'}</button></div></form>`;
+}
+
+/* --- Avaliação em etapas --- */
+function getP(o, path){ return path.split('.').reduce((a,k)=>a?.[k], o); }
+function setP(o, path, v){ const ks = path.split('.'); let t = o; ks.slice(0,-1).forEach(k => { t[k] = t[k] || {}; t = t[k]; }); if (v === null || v === '') delete t[ks.at(-1)]; else t[ks.at(-1)] = v; }
+function startDraft(eid){
+  const p = patientById(state.pid); const e = eid ? state.evals.find(x => x.id === eid) : null;
+  if (e) { state.draft = JSON.parse(JSON.stringify(e)); delete state.draft.id; }
+  else { const prev = evalsOf(p.id).at(-1); const data = today();
+    state.draft = { pacienteId:p.id, data, hora:'', metodo: prev?.metodo || 'bio', idade: ageAt(p.nascimento, data) ?? (prev && num(prev.idade)!=null ? num(prev.idade) : null), altura: num(p.altura) ?? (prev ? num(prev.altura) : null), medidas:{}, dobras:{} }; }
+  state.step = 0; state._focus = true;
+}
+function fieldHTML(f){
+  const id = 'w_' + f.p.replace('.', '_'); const v = getP(state.draft, f.p);
+  let inp;
+  if (f.type === 'select') inp = `<select id="${id}" data-p="${f.p}">${Object.entries(f.opts).map(([k,l])=>`<option value="${k}"${v===k?' selected':''}>${l}</option>`).join('')}</select>`;
+  else if (f.type === 'textarea') inp = `<textarea id="${id}" data-p="${f.p}" data-t="text">${esc(v||'')}</textarea>`;
+  else if (f.type === 'date' || f.type === 'time') inp = `<input id="${id}" type="${f.type}" data-p="${f.p}" data-t="text" value="${esc(v||'')}">`;
+  else inp = `<div class="inu"><input id="${id}" inputmode="decimal" data-p="${f.p}" value="${fin(v)}" autocomplete="off"><em>${f.unit||''}</em></div>`;
+  return `<div class="f${f.wide?' wide':''}"><label for="${id}">${f.label}${f.req?' <span class="tag">obrigatório</span>':''}</label>${inp}${f.hint?`<span class="hint">${f.hint}</span>`:''}</div>`;
+}
+function viewWizard(){
+  const p = patientById(state.pid); if (!p || !state.draft) return '';
+  const S = STEPS[state.step]; const last = state.step === STEPS.length - 1;
+  const stepper = STEPS.map((s,i) => `<button type="button" class="st${i===state.step?' cur':i<state.step?' done':''}" data-act="goStep" data-i="${i}"${i===state.step?' aria-current="step"':''}><i>${i<state.step?'✓':i+1}</i>${s.nome}</button>`).join('');
+  let body = '';
+  if (S.key === 'revisao') body = reviewHTML(p);
+  else body = (S.tip?`<div class="tip">${S.tip}</div>`:'') + `<div class="fields">${S.fields.map(fieldHTML).join('')}</div><div class="live" id="live"></div>`;
+  return `<div><button class="btn ghost sm" data-act="abrir" data-id="${p.id}">← ${esc(p.nome)}</button></div>
+  <div class="stack" style="gap:10px"><div class="row" style="justify-content:space-between"><span class="eyebrow">${state.eid?'Editando avaliação':'Nova avaliação'} · ${esc(p.nome)}</span><span class="muted" style="font-size:13.5px">Etapa ${state.step+1} de ${STEPS.length}</span></div>
+   <div class="progress" aria-hidden="true"><i style="width:${((state.step+1)/STEPS.length*100).toFixed(0)}%"></i></div>
+   <nav class="stepper" aria-label="Etapas da avaliação">${stepper}</nav></div>
+  <form id="wform" class="stepcard" novalidate><div><h2>${S.titulo}${S.opc?'<span class="tag">opcional</span>':''}</h2></div><p class="lead">${S.lead}</p>
+   ${body}
+   <p id="wErr" class="banner" hidden></p>
+   <div class="navbar"><button class="btn" type="button" data-act="${state.step?'prevStep':'abrir'}" data-id="${p.id}">${state.step?'← Voltar':'Cancelar'}</button>
+    <div class="row">${S.opc?`<button class="btn ghost" type="button" data-act="nextStep">Pular esta etapa</button>`:''}${last?`<button class="btn pri big" type="submit" id="wSave">Salvar e gerar relatório</button>`:`<button class="btn pri big" type="submit">Próximo →</button>`}</div></div>
+  </form>`;
+}
+function liveItems(){
+  const p = patientById(state.pid); const d = derive(state.draft, p); const k = STEPS[state.step].key; const it = [];
+  const imcC = classify(d.imc, refIMC());
+  if (k === 'dados') { if (d.pesoMin) it.push(['Peso saudável para a altura', `${fmt(d.pesoMin)} a ${fmt(d.pesoMax)} kg`]); }
+  if (k === 'balanca') { if (d.imc!=null) it.push(['IMC', `${fmt(d.imc)} · ${imcC.label}`]); if (d.mg!=null) it.push(['Massa gorda', fmt(d.mg)+' kg']); if (d.mm!=null) it.push(['Massa magra', fmt(d.mm)+' kg']); if (d.meKg!=null) it.push(['Músculo esquelético', fmt(d.meKg)+' kg']); }
+  if (k === 'tronco') { if (d.rcq!=null) { const c = classify(Math.round(d.rcq*100)/100, refRCQ(d.sexo, d.idade)); it.push(['Relação cintura/quadril', `${fmt(d.rcq,2)} · ${c.label}`]); } }
+  if (k === 'dobras') { const n = DOBRAS.filter(([x]) => num(state.draft.dobras?.[x]) != null).length; it.push(['Dobras preenchidas', `${n} de 7`]); if (d.somaDobras!=null) it.push(['Soma das dobras', fmt(d.somaDobras,0)+' mm']); if (d.gJP!=null) it.push(['Gordura pelas dobras', fmt(d.gJP)+' %']); }
+  if (k === 'pressao') { const c = classPA(d.pas, d.pad); if (c) it.push(['Classificação da pressão', c.label]); }
+  return it;
+}
+function updateLive(){ const el = $('#live'); if (!el) return; const it = liveItems(); el.innerHTML = it.map(([a,b]) => `<div><span>${a}</span><b>${b}</b></div>`).join(''); el.hidden = !it.length; }
+function reviewHTML(p){
+  const e = state.draft, d = derive(e, p);
+  const group = (i, title, rows) => `<section class="rv"><header><h3>${title}</h3><button type="button" class="btn sm" data-act="goStep" data-i="${i}">Editar</button></header>${rows.length?`<dl>${rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>`:'<p class="muted" style="margin:0;font-size:14px">Não preenchido</p>'}</section>`;
+  const fields = i => STEPS[i].fields.filter(f => f.type !== 'textarea' && getP(e, f.p) != null && getP(e, f.p) !== '').map(f => { const v = getP(e, f.p); return [f.label, f.type==='select'?f.opts[v]: f.type==='date'?fdate(v): f.type==='time'?v: fmt(num(v), Number.isInteger(num(v))?0:1)+' '+(f.unit||'')]; });
+  const calc = [];
+  if (d.imc!=null) calc.push(['IMC', `${fmt(d.imc)} (${classify(d.imc, refIMC()).label})`]);
+  if (d.gord!=null) calc.push(['Gordura usada', `${fmt(d.gord)} %${d.gordCalc?' (dobras)':''}`]);
+  if (d.mg!=null) calc.push(['Massa gorda / magra', `${fmt(d.mg)} / ${fmt(d.mm)} kg`]);
+  if (d.rcq!=null) calc.push(['Cintura/quadril', fmt(d.rcq,2)]);
+  if (d.hb!=null) calc.push(['TMB estimada', fmt(d.hb,0)+' kcal']);
+  const pr = fields(5); if (e.obs) pr.push(['Observações', 'preenchidas']);
+  return `<div class="review">${group(0,'Dados',fields(0))}${group(1,'Balança',fields(1))}${group(2,'Tronco',fields(2))}${group(3,'Membros',fields(3))}${group(4,'Dobras',fields(4))}${group(5,'Rotina e notas',pr)}
+   <section class="rv" style="border-color:var(--accent);background:var(--accent-soft)"><header><h3>Resultados calculados</h3></header>${calc.length?`<dl>${calc.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>`:'<p class="muted" style="margin:0">Preencha o peso e a altura.</p>'}</section></div>`;
+}
+function validateStep(i){
+  const S = STEPS[i]; if (!S.fields) return '';
+  for (const f of S.fields) { const v = getP(state.draft, f.p); if (f.req && (v == null || v === '')) return `Preencha o campo “${f.label}” para continuar.`; }
+  for (const f of S.fields) { if (f.type || !f.unit) continue; const el = $('#w_'+f.p.replace('.','_')); if (el && el.value.trim() && num(el.value) == null) return `O valor de “${f.label}” não é um número. Use só algarismos e vírgula.`; }
+  return '';
+}
+function firstInvalid(){ for (let i = 0; i < STEPS.length - 1; i++) { const S = STEPS[i]; for (const f of S.fields) { const v = getP(state.draft, f.p); if (f.req && (v == null || v === '')) return i; } } return -1; }
+function goStep(i){ state.step = Math.max(0, Math.min(STEPS.length-1, i)); state._focus = true; render(); window.scrollTo(0,0); }
+
+function viewConfig(){
+  const c = cfg();
+  return `<div><button class="btn ghost sm" data-act="home">← Clientes</button></div>
+  <form id="cform" class="stepcard" novalidate><div><div class="eyebrow">Configurações</div><h2>Identificação no app e nos relatórios</h2></div>
+   <div class="fields">
+   <div class="f"><label for="c_prof">Nome</label><input id="c_prof" value="${esc(c.profissional)}"></div>
+   <div class="f"><label for="c_tit">Título</label><input id="c_tit" value="${esc(c.titulo)}"></div>
+   <div class="f"><label for="c_reg">Registros profissionais</label><input id="c_reg" value="${esc(c.registro)}"></div>
+   <div class="f"><label for="c_cont">WhatsApp de contato</label><input id="c_cont" inputmode="tel" value="${esc(fphone(c.contato))}"></div>
+   <div class="f wide"><label for="c_sau">Mensagem de boas-vindas</label><input id="c_sau" value="${esc(c.saudacao)}" placeholder="Seja bem-vinda, ${esc(c.profissional)}!"><span class="hint">Em branco, usa “Seja bem-vinda,” seguido do nome.</span></div>
+   <div class="f wide"><label for="c_rod">Texto de rodapé do relatório</label><textarea id="c_rod" placeholder="Orientação que acompanha todos os relatórios">${esc(c.rodape)}</textarea></div>
+   </div>
+   <div class="navbar"><button class="btn ghost" type="button" data-act="home">Cancelar</button><button class="btn pri" type="submit">Salvar configurações</button></div></form>
+  <section class="stepcard"><div><div class="eyebrow">Backup</div><h2>Cópia de segurança dos dados</h2></div><p class="lead">Baixe um arquivo com todas as clientes e avaliações, ou importe um backup. A importação soma os dados aos atuais e substitui avaliações com o mesmo código.</p>
+   <div class="row"><button class="btn" type="button" data-act="exportar">Baixar backup (.json)</button><button class="btn" type="button" data-act="importar">Importar backup</button></div>
+   <p class="muted" style="margin:0;font-size:13.5px">Conta: ${esc(state.user?.email || '')}</p></section>`;
+}
+
+
+/* ============ Sugestões ============ */
+function aguaDiaria(d, e){
+  if (d.peso == null) return null;
+  const i = d.idade; const mlkg = i == null ? 35 : i < 18 ? 40 : i <= 55 ? 35 : i <= 65 ? 30 : 25;
+  const base = d.peso * mlkg; const min = num(e.treinoMin) || 0; const extra = min / 60 * 500;
+  const total = base + extra; const efsa = d.sexo === 'M' ? 2.5 : 2.0;
+  return { mlkg, base, min, extra, total, copos: Math.round(total / 250), efsa };
+}
+function sugestoes(p, e, d, hist){
+  const S = []; const add = (pr, titulo, texto, src) => S.push({ pr, titulo, texto, src });
+  const gR = refGordura(d.sexo, d.idade), meR = refME(d.sexo, d.idade);
+  const g = classify(d.gord, gR), me = classify(d.me, meR), imc = classify(d.imc, refIMC()), vis = classify(d.visceral, refVisceral());
+  const rc = d.rcq != null ? classify(Math.round(d.rcq*100)/100, refRCQ(d.sexo, d.idade)) : null; const pa = classPA(d.pas, d.pad);
+  const tmb = d.tmb ?? d.hb; const get = tmb ? tmb * 1.55 : null;
+  if (g && g.i >= 2 && d.mm != null) {
+    const alvo = (gR.cuts[1] - 0.1) / 100; const pesoAlvo = d.mm / (1 - alvo); const perder = d.peso - pesoAlvo;
+    add('alta', 'Reduzir gordura corporal', `A gordura está ${g.i===2?'alta':'muito alta'} (${fmt(d.gord)} %). Para chegar a ${fmt(alvo*100)} %, limite da faixa normal, a meta é perder cerca de ${fmt(perder)} kg de gordura preservando a massa magra. Ritmo seguro: 0,5 a 1 % do peso por semana, com déficit de 300 a 500 kcal por dia${get?` sobre o gasto diário estimado de ${fmt(get,0)} kcal (metabolismo basal × 1,55, atividade moderada)`:''}.`, null);
+  } else if (g && g.i === 0) {
+    add('media', 'Atenção à gordura abaixo da faixa', `A gordura está abaixo da faixa de referência (${fmt(d.gord)} %). Garanta energia suficiente na alimentação e acompanhe com nutricionista, principalmente em fase de treino intenso.`, null);
+  } else if (g) {
+    add('ok', 'Gordura dentro da faixa', `A gordura corporal está normal (${fmt(d.gord)} %). O objetivo é manter ou ajustar conforme a meta estética e de desempenho.`, null);
+  }
+  if (me && me.i === 0) add('alta', 'Ganhar massa muscular', `O músculo esquelético está baixo (${fmt(d.me)} %). Priorize treino de força progressivo de 3 a 4 vezes por semana, trabalhando todos os grandes grupos musculares.`, 10);
+  if (d.imc != null && imc.i >= 2 && g && g.i <= 1) add('info', 'IMC alto com gordura normal', 'O IMC acima de 25 se explica pela massa muscular, já que a gordura está na faixa normal. Nesse caso o IMC superestima o risco.', 1);
+  if ((vis && vis.i >= 1) || (rc && rc.i >= 2)) add('alta', 'Reduzir gordura abdominal', `${vis && vis.i >= 1 ? `Gordura visceral ${vis.i===1?'alta':'muito alta'} (nível ${d.visceral}). ` : ''}${rc && rc.i >= 2 ? `Relação cintura/quadril com ${rc.label.toLowerCase()} (${fmt(d.rcq,2)}). ` : ''}Inclua de 150 a 300 minutos semanais de exercício aeróbico moderado, reduza açúcar, ultraprocessados e álcool, e oriente acompanhamento médico.`, 10);
+  else if (rc && rc.i === 1) add('media', 'Acompanhar a cintura', `A relação cintura/quadril indica risco moderado (${fmt(d.rcq,2)}). Mantenha o exercício aeróbico regular e acompanhe a medida da cintura a cada avaliação.`, 4);
+  if (pa && pa.tone !== 'ok') add('alta', 'Pressão arterial', `Pressão classificada como ${pa.label.toLowerCase()} (${d.pas??'-'} x ${d.pad??'-'} mmHg). Encaminhe para avaliação médica antes de aumentar a intensidade dos treinos. Reduzir o sal para menos de 5 g por dia (2 g de sódio) ajuda no controle.`, 12);
+  if (d.idadeCorporal != null && d.idade != null && d.idadeCorporal > d.idade) add('media', 'Idade corporal acima da real', `A idade corporal (${d.idadeCorporal} anos) está acima da idade real (${d.idade} anos). Ela melhora junto com a redução de gordura e o ganho de músculo.`, null);
+  if (d.peso != null) add('info', 'Proteína na alimentação', `Para quem treina força, a referência é de 1,4 a 2,0 g de proteína por kg de peso por dia: entre ${fmt(d.peso*1.4,0)} e ${fmt(d.peso*2,0)} g para ${fmt(d.peso)} kg, divididos ao longo das refeições. Ajuste com nutricionista.`, 11);
+  add('info', 'Atividade física semanal', 'Recomendação mínima para adultos: 150 a 300 minutos de atividade aeróbica moderada (ou 75 a 150 minutos vigorosa) e fortalecimento muscular em 2 ou mais dias por semana.', 10);
+  if (hist.length > 1) {
+    const pv = derive(hist.at(-2), p); const same = hist.at(-2).metodo === e.metodo;
+    if (same && pv.gord != null && d.gord != null) {
+      const dg = d.gord - pv.gord;
+      if (dg <= -0.5) add('ok', 'Evolução positiva', `A gordura caiu ${fmt(Math.abs(dg))} ponto percentual desde ${fdate(hist.at(-2).data)}. Mantenha a estratégia atual.`, null);
+      else if (dg >= 0.5) add('media', 'Rever a estratégia', `A gordura subiu ${fmt(dg)} ponto percentual desde ${fdate(hist.at(-2).data)}. Vale revisar alimentação, sono e frequência de treino.`, null);
+    }
+  }
+  add('info', 'Próxima avaliação', 'Reavalie em 30 a 60 dias, nas mesmas condições: mesmo horário, em jejum, depois de urinar e sem treino nas horas anteriores.', null);
+  const ord = { alta:0, media:1, ok:2, info:3 }; return S.sort((a,b) => ord[a.pr] - ord[b.pr]);
+}
+function sugestoesHTML(p, e, d, hist){
+  const a = aguaDiaria(d, e); const S = sugestoes(p, e, d, hist);
+  const ic = { alta:'!', media:'!', ok:'✓', info:'i' };
+  let h = `<section class="rpt-block"><h2 class="rpt-sec">Sugestões e próximos passos</h2>`;
+  if (a) h += `<div class="agua"><svg class="gota" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4C24 4 10 20 10 30a14 14 0 0 0 28 0C38 20 24 4 24 4z" fill="#C657A0"/><path d="M18 31a6 6 0 0 0 6 6" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+    <div><span style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--p-muted)">Água por dia</span><b class="big">${fmt(a.total/1000)} litros</b>
+    <span>Cerca de ${a.copos} copos de 250 mL, distribuídos ao longo do dia.</span>
+    <small>Cálculo: ${a.mlkg} mL por kg × ${fmt(d.peso)} kg = ${fmt(a.base/1000)} L${a.min?` + ${fmt(a.extra/1000)} L pelos ${a.min} minutos de treino diário (cerca de 500 mL por hora de exercício)`:''}. Referência mínima para ${d.sexo==='M'?'homens':'mulheres'} adultos: ${fmt(a.efsa)} L de água total por dia<sup>(8)</sup>. No treino, beba o suficiente para não perder mais de 2 % do peso e reponha cerca de 1,5 L para cada kg perdido<sup>(9)</sup>. Pessoas com doença renal ou cardíaca devem seguir a orientação médica.</small></div></div>`;
+  h += `<div class="sug">${S.map(s => `<div class="sg"><i class="pr-${s.pr}" aria-hidden="true">${ic[s.pr]}</i><div><b>${esc(s.titulo)}${s.src?`<sup>(${s.src})</sup>`:''}</b><p>${esc(s.texto)}</p></div></div>`).join('')}</div>`;
+  return h + `<p class="note">Sugestões geradas automaticamente a partir dos dados desta avaliação. Elas não substituem a orientação individual de médico ou nutricionista.</p></section>`;
+}
+/* ============ Relatório ============ */
+function deltaCell(cur, old, d, better, unit=''){
+  if (cur == null || old == null) return '<td>-</td>';
+  const v = cur - old; const r = Math.abs(v) < Math.pow(10,-d)/2 ? 0 : v;
+  const cls = !better || r === 0 ? 'd-neu' : ((better==='down') === (r < 0) ? 'd-good' : 'd-bad');
+  return `<td class="${cls}">${sgn(r,d)}${unit}</td>`;
+}
+function sumKeys(e, keys){ return keys.reduce((a,k)=>a+(num(e.medidas?.[k])??0),0); }
+function sumPairs(cur, old, keys){ const ks = keys.filter(k => num(cur.medidas?.[k])!=null && num(old.medidas?.[k])!=null); return ks.length ? [sumKeys(cur,ks), sumKeys(old,ks)] : [null,null]; }
+function resumoEvol(p, hist){
+  if (hist.length < 2) return '';
+  const cur = hist.at(-1), prev = hist.at(-2), first = hist[0];
+  const dc = derive(cur, p), dp = derive(prev, p), df = derive(first, p);
+  const mix = [prev, first].some(e => e.metodo !== cur.metodo);
+  const line = (lbl, f) => `<tr><td>${lbl}</td>${f(dp, prev)}${hist.length>2?f(df, first):''}</tr>`;
+  const kg = (a,b) => a!=null&&b!=null ? ` <small>(${sgn(a-b)} kg)</small>` : '';
+  let h = `<section class="rpt-block"><h2 class="rpt-sec">Resumo da evolução</h2><table class="sum"><thead><tr><th>Indicador</th><th>Desde a anterior (${fdateShort(prev.data)})</th>${hist.length>2?`<th>Desde a primeira (${fdateShort(first.data)})</th>`:''}</tr></thead><tbody>`;
+  h += line('Tempo', (d, e) => `<td class="d-neu">${diffMD(e.data, cur.data)}</td>`);
+  h += line('Peso', d => deltaCell(dc.peso, d.peso, 1, null, ' kg'));
+  h += line('Gordura corporal', d => deltaCell(dc.gord, d.gord, 1, 'down', ' %').replace('</td>', kg(dc.mg, d.mg)+'</td>'));
+  h += line('Massa magra', d => deltaCell(dc.mm, d.mm, 1, 'up', ' kg'));
+  h += line('Músculo esquelético', d => deltaCell(dc.me, d.me, 1, 'up', ' %').replace('</td>', kg(dc.meKg, d.meKg)+'</td>'));
+  h += line('Gordura visceral', d => deltaCell(dc.visceral, d.visceral, 0, 'down'));
+  h += line('Perímetros do tronco', (d, e) => { const [a,b] = sumPairs(cur, e, TRONCO); return deltaCell(a, b, 1, null, ' cm'); });
+  h += line('Perímetros dos membros', (d, e) => { const [a,b] = sumPairs(cur, e, MEMBROS); return deltaCell(a, b, 1, null, ' cm'); });
+  h += line('Soma das dobras', d => deltaCell(dc.somaDobras, d.somaDobras, 0, 'down', ' mm'));
+  h += `</tbody></table>${mix?`<p class="note">Há avaliações feitas por métodos diferentes no período. Percentuais de gordura e de músculo variam conforme o método; compare-os com cautela.</p>`:''}<p class="note">Verde indica mudança favorável; vermelho, desfavorável. Peso e perímetros não recebem cor porque dependem do objetivo.</p></section>`;
+  return h;
+}
+function rangeBar(v, ref, d=1){
+  if (v == null) return '';
+  const [lo, hi] = ref.domain; const edges = [lo, ...ref.cuts, hi];
+  const pct = x => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
+  let segs = ''; for (let i = 0; i < edges.length - 1; i++) { const w = pct(edges[i+1]) - pct(edges[i]); if (w > 0) segs += `<div class="rb-seg sg-${ref.tones[i]}" style="width:${w}%" title="${ref.labels[i]}"></div>`; }
+  const ticks = (ref.ticks || ref.cuts).map(t => `<span class="rb-tk" style="left:${pct(t)}%">${fmt(t, Number.isInteger(t)?0:(d===2?2:1))}</span>`).join('');
+  const mp = pct(v); const al = mp < 6 ? 'translateX(-10%)' : mp > 94 ? 'translateX(-90%)' : 'translateX(-50%)';
+  return `<div class="rb" aria-hidden="true"><div class="rb-track">${segs}</div><span class="rb-mk" style="left:${mp}%;transform:${al}">${fmt(v,d)}<i></i></span>${ticks}</div>`;
+}
+function indRow({nome, ref, refSrc, val, sub, chip, tone, bar}){
+  return `<div class="ind"><div class="nm"><b>${nome}</b>${ref?`<small>Referência${refSrc?`<sup>(${refSrc})</sup>`:''}: ${ref}</small>`:''}</div>
+   <div class="val">${val}${sub?`<small>${sub}</small>`:''}</div><div class="ev">${chip?`<span class="pchip pc-${tone||'neutral'}">${chip}</span>`:''}</div>${bar?`<div class="bar">${bar}</div>`:''}</div>`;
+}
+const PAL = ['#B8448F','#2A2226','#F08C8F','#7B5EA7','#3E8E5A','#D9822B','#4A90C2','#8C7A3A'];
+function niceStep(r){ const e = Math.pow(10, Math.floor(Math.log10(r))); const f = r/e; return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e; }
+function chartSVG(o){
+  const W=440, H=o.h||250, L=40, R=12, T=22, B=30; const n = o.labels.length;
+  const vals = o.series.flatMap(s => s.values).filter(v => v != null);
+  if (!vals.length) return '';
+  let lo = Math.min(...vals, ...(o.extra||[])), hi = Math.max(...vals, ...(o.extra||[]));
+  if (o.kind === 'bar' || o.zero) lo = Math.min(0, lo);
+  const span = (hi - lo) || Math.abs(hi)*0.2 || 1;
+  if (!(o.kind === 'bar' || o.zero)) lo -= span*0.18; hi += span*0.22;
+  const step = niceStep((hi - lo)/4); lo = Math.floor(lo/step)*step; hi = Math.ceil(hi/step)*step;
+  const pw = W-L-R, ph = H-T-B; const band = pw/n;
+  const x = i => L + band*(i+0.5); const y = v => T + ph*(1-(v-lo)/(hi-lo));
+  const FF = 'Rubik, Arial, sans-serif';
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title)}" font-family="${FF}">`;
+  for (let t = lo; t <= hi + step/2; t += step) { const yy = y(t).toFixed(1); s += `<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="#F0E4EA" stroke-width="1"/><text x="${L-6}" y="${(+yy+4).toFixed(1)}" text-anchor="end" font-size="11" fill="#6A5763">${fmt(t, step<1?1:0)}</text>`; }
+  if (o.band) { const [a,b] = o.band; s += `<rect x="${L}" y="${y(Math.min(b,hi)).toFixed(1)}" width="${pw}" height="${Math.max(0,y(Math.max(a,lo))-y(Math.min(b,hi))).toFixed(1)}" fill="#3E8E5A" fill-opacity=".10"/><text x="${W-R-4}" y="${(y(Math.min(b,hi))+12).toFixed(1)}" text-anchor="end" font-size="10.5" fill="#2F7D4F">${esc(o.bandLabel||'')}</text>`; }
+  (o.refs||[]).forEach(r => { if (r.v < lo || r.v > hi) return; s += `<line x1="${L}" x2="${W-R}" y1="${y(r.v).toFixed(1)}" y2="${y(r.v).toFixed(1)}" stroke="${r.color}" stroke-dasharray="5 4" stroke-width="1.2"/><text x="${W-R-4}" y="${(y(r.v)-4).toFixed(1)}" text-anchor="end" font-size="10.5" fill="${r.color}">${esc(r.label)}</text>`; });
+  const every = Math.ceil(n / 5);
+  o.labels.forEach((lb, i) => { if (i % every === 0 || i === n-1) s += `<text x="${x(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="11" fill="#6A5763">${esc(lb)}</text>`; });
+  s += `<line x1="${L}" x2="${W-R}" y1="${T+ph}" y2="${T+ph}" stroke="#D8C5D0"/>`;
+  const dd = o.d ?? 1; const labelAll = n <= 5 && o.series.length <= 2;
+  if (o.kind === 'bar') {
+    const k = o.series.length; const bw = Math.min(46, band*0.7/k);
+    o.series.forEach((se, j) => se.values.forEach((v, i) => { if (v == null) return; const bx = x(i) - (bw*k)/2 + j*bw; s += `<rect x="${bx.toFixed(1)}" y="${y(v).toFixed(1)}" width="${(bw-3).toFixed(1)}" height="${(y(lo)-y(v)).toFixed(1)}" rx="2" fill="${se.color}"/><text x="${(bx+(bw-3)/2).toFixed(1)}" y="${(y(v)-5).toFixed(1)}" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1C1219">${fmt(v,dd)}</text>`; }));
+  } else {
+    o.series.forEach((se, j) => {
+      let path = '', pen = false; se.values.forEach((v, i) => { if (v == null) { pen = false; return; } path += (pen?'L':'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1) + ' '; pen = true; });
+      s += `<path d="${path}" fill="none" stroke="${se.color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+      const lastI = se.values.map((v,i)=>v!=null?i:-1).filter(i=>i>=0).at(-1);
+      se.values.forEach((v, i) => { if (v == null) return; const lst = i === lastI;
+        s += `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${lst?5:3.5}" fill="${lst?se.color:'#FFFFFF'}" stroke="${se.color}" stroke-width="2"/>`;
+        if (labelAll || lst) { const above = o.series.length < 2 || j % 2 === 0; s += `<text x="${x(i).toFixed(1)}" y="${(y(v)+(above?-9:17)).toFixed(1)}" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1C1219" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">${fmt(v,dd)}</text>`; } });
+    });
+  }
+  return s + `</svg>`;
+}
+function chartBox(o){ const svg = chartSVG(o); if (!svg) return ''; const lg = o.series.length > 1 || o.legend ? `<div class="lg">${o.series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}</div>` : ''; return `<div class="chart rpt-block" style="padding:12px"><h3>${esc(o.title)}</h3><p>${esc(o.sub||'')}</p>${svg}${lg}</div>`; }
+function donut(mg, mm){
+  if (mg == null) return ''; const tot = mg + mm; const a = mg/tot; const R=70, r=44, cx=100, cy=90;
+  const pt = (ang, rad) => [cx + rad*Math.sin(ang*2*Math.PI), cy - rad*Math.cos(ang*2*Math.PI)];
+  const arc = (a0, a1, col) => { const [x0,y0]=pt(a0,R),[x1,y1]=pt(a1,R),[x2,y2]=pt(a1,r),[x3,y3]=pt(a0,r); const lg = a1-a0>0.5?1:0; return `<path d="M${x0} ${y0} A${R} ${R} 0 ${lg} 1 ${x1} ${y1} L${x2} ${y2} A${r} ${r} 0 ${lg} 0 ${x3} ${y3}Z" fill="${col}"/>`; };
+  return `<div class="chart rpt-block" style="padding:12px"><h3>Composição corporal</h3><p>Massa gorda e massa magra na avaliação atual</p><svg viewBox="0 0 400 180" role="img" aria-label="Massa gorda e massa magra" font-family="Rubik, Arial, sans-serif">${arc(0,a,'#F08C8F')}${arc(a,0.9999,'#B8448F')}
+   <text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="16" font-weight="600" fill="#1C1219">${fmt(tot)} kg</text>
+   <rect x="205" y="52" width="12" height="12" rx="3" fill="#F08C8F"/><text x="224" y="62" font-size="13" fill="#1C1219">Massa gorda</text><text x="224" y="80" font-size="15" font-weight="600" fill="#1C1219">${fmt(mg)} kg · ${fmt(a*100)} %</text>
+   <rect x="205" y="104" width="12" height="12" rx="3" fill="#B8448F"/><text x="224" y="114" font-size="13" fill="#1C1219">Massa magra</text><text x="224" y="132" font-size="15" font-weight="600" fill="#1C1219">${fmt(mm)} kg · ${fmt((1-a)*100)} %</text></svg></div>`;
+}
+function historico(p, hist){
+  const labels = hist.map((e,i) => (i===0&&hist.length>1?'1ª · ':'') + fdateShort(e.data));
+  const D = hist.map(e => derive(e, p)); const cur = D.at(-1);
+  const pick = f => D.map(f); const md = k => hist.map(e => num(e.medidas?.[k]));
+  const series = (keys, names) => keys.map((k,i) => ({name:names[i], color:PAL[i], values: md(k)})).filter(s => s.values.some(v => v != null));
+  const has = s => s.values.some(v => v != null);
+  const charts = [
+    chartBox({title:'Peso corporal', sub:'Quilogramas (kg). Faixa verde: peso compatível com IMC normal.', labels, series:[{name:'Peso', color:PAL[0], values:pick(d=>d.peso)}], band: cur.pesoMin?[cur.pesoMin,cur.pesoMax]:null, bandLabel:'IMC 18,5 a 24,9', extra: cur.pesoMax?[cur.pesoMax]:[]}),
+    donut(cur.mg, cur.mm),
+    chartBox({title:'Gordura e músculo', sub:'Percentual do peso corporal (%)', labels, series:[{name:'Gordura corporal', color:PAL[2], values:pick(d=>d.gord)},{name:'Músculo esquelético', color:PAL[0], values:pick(d=>d.me)}].filter(has)}),
+    chartBox({title:'Massa gorda e massa magra', sub:'Quilogramas (kg)', labels, series:[{name:'Massa magra', color:PAL[0], values:pick(d=>d.mm)},{name:'Massa gorda', color:PAL[2], values:pick(d=>d.mg)}].filter(has)}),
+    chartBox({title:'Gordura visceral', sub:'Nível (normal de 1 a 9)', labels, series:[{name:'Gordura visceral', color:PAL[1], values:pick(d=>d.visceral)}], refs:[{v:9.5,label:'limite do normal',color:'#A8322A'}], d:0, zero:true}),
+    chartBox({title:'Idade corporal', sub:'Idade estimada pela composição corporal, comparada à idade real (anos)', labels, kind:'bar', series:[{name:'Idade real', color:'#D8C5D0', values:pick(d=>d.idadeCorporal!=null?d.idade:null)},{name:'Idade corporal', color:PAL[0], values:pick(d=>d.idadeCorporal)}], d:0, legend:true}),
+    chartBox({title:'Medidas do tronco', sub:'Perímetros em centímetros (cm)', labels, series:series(TRONCO,['Tórax','Cintura','Abdome','Quadril'])}),
+    chartBox({title:'Membros superiores', sub:'Perímetros em centímetros (cm)', labels, series:series(['bracoE','bracoD','antebracoE','antebracoD'],['Braço E.','Braço D.','Antebraço E.','Antebraço D.'])}),
+    chartBox({title:'Membros inferiores', sub:'Perímetros em centímetros (cm)', labels, series:series(['coxaE','coxaD','panturrilhaE','panturrilhaD'],['Coxa E.','Coxa D.','Panturrilha E.','Panturrilha D.'])}),
+    chartBox({title:'Pressão arterial', sub:'Milímetros de mercúrio (mmHg)', labels, series:[{name:'Sistólica', color:PAL[0], values:pick(d=>d.pas)},{name:'Diastólica', color:PAL[1], values:pick(d=>d.pad)}].filter(has), refs:[{v:120,label:'120',color:'#8F5B00'},{v:80,label:'80',color:'#8F5B00'}], d:0, extra:[70,125]}),
+    chartBox({title:'Soma das dobras', sub:'Soma das 7 dobras cutâneas em milímetros (mm)', labels, series:[{name:'Soma', color:PAL[0], values:pick(d=>d.somaDobras)}], d:0}),
+    chartBox({title:'Dobras cutâneas', sub:'Milímetros (mm) por ponto', labels, series:DOBRAS.map(([k,l],i)=>({name:l.replace(' (tórax)',''), color:PAL[i], values:hist.map(e=>num(e.dobras?.[k]))})).filter(has), d:0})
+  ].filter(Boolean);
+  if (!charts.length) return '';
+  return `<section class="rpt-block" style="padding-bottom:4px"><h2 class="rpt-sec">Histórico <small>${hist.length} ${hist.length===1?'avaliação':'avaliações'} até ${fdate(hist.at(-1).data)}</small></h2></section><div class="rpt-block" style="padding-top:0"><div class="cgrid">${charts.join('')}</div></div>`;
+}
+function reportHTML(p, eid){
+  const all = evalsOf(p.id); const idx = all.findIndex(e => e.id === eid); if (idx < 0) return '';
+  const hist = all.slice(0, idx+1); const e = hist.at(-1); const d = derive(e, p); const c0 = cfg();
+  const imcR = refIMC(), gR = refGordura(d.sexo, d.idade), meR = refME(d.sexo, d.idade), vR = refVisceral(), rR = refRCQ(d.sexo, d.idade);
+  const c = (v, r) => classify(v, r);
+  let h = `<article class="rpt" id="rpt">`;
+  h += `<header class="rpt-block rpt-head"><div class="idt"><span class="lt"><img src="${LOGO}" alt=""></span><div><div class="nm">${esc((c0.profissional||'').toUpperCase())}</div><div class="sb">${esc(c0.titulo)}</div><div class="rg">${[c0.registro, c0.contato?'WhatsApp '+fphone(c0.contato):''].filter(Boolean).map(esc).join(' · ')}</div></div></div>
+    <div class="tt"><h2>RELATÓRIO DE AVALIAÇÃO CORPORAL</h2><div>${METODOS[e.metodo]||''} · avaliação ${idx+1} de ${all.length}</div></div></header>`;
+  h += `<section class="rpt-block"><div class="rpt-id"><div><span>Nome</span><b>${esc(p.nome)}</b></div><div><span>Sexo</span><b>${d.sexo==='M'?'Masculino':'Feminino'}</b></div><div><span>Idade</span><b>${d.idade!=null?d.idade+' anos':'-'}</b></div><div><span>Altura</span><b>${d.alt?fmt(d.alt)+' cm':'-'}</b></div><div><span>Data</span><b>${fdate(e.data)}${e.hora?' '+e.hora.replace(':','h'):''}</b></div><div><span>Peso</span><b>${fmt(d.peso)} kg</b></div><div><span>IMC</span><b>${d.imc!=null?fmt(d.imc)+' kg/m²':'-'}</b></div><div><span>Gordura</span><b>${d.gord!=null?fmt(d.gord)+' %':'-'}</b></div></div></section>`;
+  h += resumoEvol(p, hist);
+  let comp = '';
+  if (d.peso != null) { let chip='', tone='neutral', sub=''; if (d.pesoMin) { if (d.peso > d.pesoMax) { chip='Acima'; tone='alert'; sub=`${fmt(d.peso-d.pesoMax)} kg acima`; } else if (d.peso < d.pesoMin) { chip='Abaixo'; tone='low'; sub=`${fmt(d.pesoMin-d.peso)} kg abaixo`; } else { chip='Adequado'; tone='ok'; } }
+    comp += indRow({nome:'Peso', ref: d.pesoMin?`${fmt(d.pesoMin)} a ${fmt(d.pesoMax)} kg`:'', refSrc:1, val:fmt(d.peso)+' kg', sub, chip, tone}); }
+  if (d.mg != null) { comp += indRow({nome:'Massa gorda', val:fmt(d.mg)+' kg', sub:fmt(d.gord)+' % do peso'}); comp += indRow({nome:'Massa magra', val:fmt(d.mm)+' kg', sub:fmt(100-d.gord)+' % do peso'}); }
+  if (d.me != null) { const k = c(d.me, meR); comp += indRow({nome:'Músculo esquelético', ref:meR.refText, refSrc:2, val:fmt(d.me)+' %', sub:fmt(d.meKg)+' kg', chip:k.label, tone:k.tone, bar:rangeBar(d.me, meR)}); }
+  if (comp) h += `<section class="rpt-block"><h2 class="rpt-sec">Composição corporal</h2>${comp}</section>`;
+  let dg = '';
+  if (d.imc != null) { const k = c(d.imc, imcR); dg += indRow({nome:'IMC', ref:imcR.refText, refSrc:1, val:fmt(d.imc)+' kg/m²', chip:k.label, tone:k.tone, bar:rangeBar(d.imc, imcR)}); }
+  if (d.gord != null) { const k = c(d.gord, gR); dg += indRow({nome:'Gordura corporal', ref:gR.refText, refSrc:3, val:fmt(d.gord)+' %', sub:fmt(d.mg)+' kg'+(d.gordCalc?' · pelas dobras':''), chip:k.label, tone:k.tone, bar:rangeBar(d.gord, gR)}); }
+  if (d.visceral != null) { const k = c(d.visceral, vR); dg += indRow({nome:'Gordura visceral', ref:vR.refText, refSrc:2, val:fmt(d.visceral,0), chip:k.label, tone:k.tone, bar:rangeBar(d.visceral, vR, 0)}); }
+  if (d.rcq != null) { const v2 = Math.round(d.rcq*100)/100; const k = c(v2, rR); dg += indRow({nome:'Relação cintura/quadril', ref:rR.refText, refSrc:4, val:fmt(d.rcq,2), sub:`cintura ${fmt(num(e.medidas.cintura))} / quadril ${fmt(num(e.medidas.quadril))} cm`, chip:k.label, tone:k.tone, bar:rangeBar(v2, rR, 2)}); }
+  if (d.pas != null || d.pad != null) { const k = classPA(d.pas, d.pad); dg += indRow({nome:'Pressão arterial', ref:'até 120 x 80 mmHg', refSrc:7, val:`${d.pas??'-'} x ${d.pad??'-'}`, sub:'mmHg', chip:k.label, tone:k.tone}); }
+  if (d.tmb != null || d.hb != null) { const base = d.tmb ?? d.hb; let chip=''; if (d.tmb != null && d.hb != null) { const pc = (d.tmb/d.hb - 1)*100; chip = Math.abs(pc) < 1 ? 'Igual à estimativa' : `${fmt(Math.abs(pc),0)} % ${pc>0?'acima':'abaixo'} da estimativa`; }
+    dg += indRow({nome:'Metabolismo basal', ref: d.hb!=null?`estimativa Harris-Benedict ${fmt(d.hb,0)} kcal`:'', refSrc:5, val:fmt(base,0)+' kcal', sub: d.tmb==null?'estimado pela fórmula':'medido na balança', chip, tone:'neutral'}); }
+  if (d.idadeCorporal != null && d.idade != null) { const df = d.idadeCorporal - d.idade; dg += indRow({nome:'Idade corporal', ref:`idade real ${d.idade} anos`, val:d.idadeCorporal+' anos', chip: df===0?'Igual à idade real':`${Math.abs(df)} ${Math.abs(df)===1?'ano':'anos'} ${df<0?'abaixo':'acima'} da real`, tone: df<=0?'ok':'alert'}); }
+  if (dg) h += `<section class="rpt-block"><h2 class="rpt-sec">Diagnóstico de risco</h2>${dg}</section>`;
+  const prevE = hist.length > 1 ? hist.at(-2) : null; const pd = prevE ? derive(prevE, p) : null;
+  const mRows = MEDIDAS.filter(([k]) => num(e.medidas?.[k]) != null).map(([k,l]) => { const a = num(e.medidas[k]), b = prevE ? num(prevE.medidas?.[k]) : null; return `<tr><td>${l}</td><td>${fmt(a)}</td>${prevE?`<td>${b!=null?sgn(a-b):'-'}</td>`:''}</tr>`; }).join('');
+  const dRows = DOBRAS.filter(([k]) => num(e.dobras?.[k]) != null).map(([k,l]) => { const a = num(e.dobras[k]), b = prevE ? num(prevE.dobras?.[k]) : null; return `<tr><td>${l}</td><td>${fmt(a,0)}</td>${prevE?`<td>${b!=null?sgn(a-b,0):'-'}</td>`:''}</tr>`; }).join('');
+  if (mRows || dRows) h += `<section class="rpt-block"><h2 class="rpt-sec">Medidas desta avaliação</h2><div class="mgrid">${mRows?`<div class="mt"><h3>Perímetros (cm)</h3><table><thead><tr><th>Local</th><th>Medida</th>${prevE?'<th>Variação</th>':''}</tr></thead><tbody>${mRows}</tbody></table></div>`:''}${dRows?`<div class="mt"><h3>Dobras cutâneas (mm)</h3><table><thead><tr><th>Ponto</th><th>Medida</th>${prevE?'<th>Variação</th>':''}</tr></thead><tbody>${dRows}${d.somaDobras!=null?`<tr><td><b>Soma</b></td><td><b>${fmt(d.somaDobras,0)}</b></td>${prevE?`<td>${pd.somaDobras!=null?sgn(d.somaDobras-pd.somaDobras,0):'-'}</td>`:''}</tr>`:''}</tbody></table></div>`:''}</div></section>`;
+  if (e.obs) h += `<section class="rpt-block"><h2 class="rpt-sec">Observações da avaliadora</h2><div class="obs">${esc(e.obs)}</div></section>`;
+  h += historico(p, hist);
+  h += sugestoesHTML(p, e, d, hist);
+  h += `<footer class="rpt-block rpt-foot">${c0.rodape?`<p>${esc(c0.rodape)}</p>`:''}<p class="sig"><b>${esc(c0.profissional)}</b> · ${esc(c0.titulo)} · ${esc(c0.registro)}${c0.contato?' · WhatsApp '+esc(fphone(c0.contato)):''}</p><p>Use estes resultados como referência ao conversar com seu médico, nutricionista ou profissional de educação física. Bioimpedância e dobras cutâneas são métodos de estimativa; o mais útil é acompanhar a tendência entre avaliações feitas nas mesmas condições.</p>
+   <p>Fontes: (1) OMS, classificação do IMC · (2) Omron Healthcare, músculo esquelético e gordura visceral · (3) Gallagher et al., 2000, faixas adotadas pela Omron · (4) Bray e Gray, 1988, relação cintura/quadril por idade · (5) Harris-Benedict revisada, Roza e Shizgal, 1984 · (6) Jackson e Pollock, 1978, e Siri, 1961, dobras cutâneas · (7) Diretrizes Brasileiras de Hipertensão Arterial, SBC, 2020 · (8) EFSA, valores de referência para água, 2010; cálculo diário por peso: 40 mL/kg até 17 anos, 35 mL/kg de 18 a 55, 30 mL/kg de 56 a 65 e 25 mL/kg acima de 65 anos · (9) ACSM, Exercise and Fluid Replacement, 2007 · (10) OMS, Diretrizes de Atividade Física, 2020 · (11) ISSN, posição sobre proteína e exercício, 2017 · (12) OMS, ingestão de sódio para adultos, 2012.</p></footer>`;
+  return h + `</article>`;
+}
+function waText(p, e){
+  const all = evalsOf(p.id); const hist = all.slice(0, all.findIndex(x=>x.id===e.id)+1); const d = derive(e, p); const c0 = cfg();
+  const L = [`*Avaliação corporal | ${p.nome}*`, `Data: ${fdate(e.data)} · ${METODOS[e.metodo]||''}`, ''];
+  L.push(`Peso: ${fmt(d.peso)} kg`); if (d.imc!=null) L.push(`IMC: ${fmt(d.imc)} (${classify(d.imc, refIMC()).label})`);
+  if (d.gord!=null) L.push(`Gordura corporal: ${fmt(d.gord)} % (${fmt(d.mg)} kg) · ${classify(d.gord, refGordura(d.sexo,d.idade)).label}`);
+  if (d.me!=null) L.push(`Músculo esquelético: ${fmt(d.me)} % (${fmt(d.meKg)} kg) · ${classify(d.me, refME(d.sexo,d.idade)).label}`);
+  if (d.visceral!=null) L.push(`Gordura visceral: ${d.visceral} · ${classify(d.visceral, refVisceral()).label}`);
+  if (d.rcq!=null) L.push(`Relação cintura/quadril: ${fmt(d.rcq,2)}`);
+  if (d.tmb!=null) L.push(`Metabolismo basal: ${fmt(d.tmb,0)} kcal`);
+  if (d.idadeCorporal!=null) L.push(`Idade corporal: ${d.idadeCorporal} anos (idade real ${d.idade})`);
+  if (hist.length > 1) { const pv = derive(hist.at(-2), p); L.push('', `*Desde ${fdate(hist.at(-2).data)}:*`); L.push(`Peso ${sgn(d.peso-pv.peso)} kg`); if (d.gord!=null&&pv.gord!=null) L.push(`Gordura ${sgn(d.gord-pv.gord)} % (${sgn(d.mg-pv.mg)} kg)`); if (d.mm!=null&&pv.mm!=null) L.push(`Massa magra ${sgn(d.mm-pv.mm)} kg`); }
+  const ag = aguaDiaria(d, e); if (ag) L.push(`Água por dia: ${fmt(ag.total/1000)} L (cerca de ${ag.copos} copos)`);
+  if (e.obs) L.push('', e.obs);
+  L.push('', `${c0.profissional} | ${c0.titulo}`, c0.registro);
+  return L.join('\n');
+}
+function viewRelatorio(){
+  const p = patientById(state.pid); const e = state.evals.find(x => x.id === state.eid); if (!p || !e) return `<div class="panel empty"><p>Avaliação não encontrada.</p><button class="btn" data-act="home">Voltar</button></div>`;
+  const ev = evalsOf(p.id); const txt = waText(p, e);
+  const digits = (p.telefone||'').replace(/\D/g,''); const phone = digits.length >= 10 && digits.length <= 11 ? '55'+digits : digits;
+  const wa = `https://wa.me/${phone}?text=${encodeURIComponent(txt)}`;
+  return `<div><button class="btn ghost sm" data-act="abrir" data-id="${p.id}">← ${esc(p.nome)}</button></div>
+  <div class="pagehead"><div><div class="eyebrow">Relatório</div><h1>${esc(p.nome)}</h1></div>
+   <div class="rtool"><label class="muted" for="selAval">Avaliação</label><select id="selAval">${[...ev].reverse().map(x=>`<option value="${x.id}"${x.id===e.id?' selected':''}>${fdate(x.data)} · ${METODOS[x.metodo]||''}</option>`).join('')}</select>
+   <button class="btn pri" data-act="pdf" id="btnPdf">Baixar PDF</button><button class="btn" data-act="html">Baixar HTML</button><button class="btn" data-act="editAval" data-id="${e.id}">Editar dados</button></div></div>
+  <div class="paper-wrap">${reportHTML(p, e.id)}</div>
+  <div class="panel sharebox"><h2 style="font-size:20px">Enviar resumo por WhatsApp</h2><p class="muted" style="margin:0;font-size:14px">Texto pronto com os principais resultados${phone?` para ${esc(fphone(p.telefone))}`:''}. Envie junto com o PDF.</p>
+   <textarea id="waText" data-v="${esc(txt)}" aria-label="Resumo para WhatsApp"></textarea>
+   <div class="row"><button class="btn" data-act="copiar">Copiar texto</button><a class="btn pri" href="${esc(wa)}" target="_blank" rel="noopener">Abrir no WhatsApp</a></div></div>`;
+}
+
+
+/* ============ Exportação ============ */
+function slug(s){ return (s||'cliente').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase(); }
+function rptCss(){ return [...document.styleSheets].flatMap(sh => { try { return [...sh.cssRules]; } catch { return []; } }).map(r => r.cssText).filter(t => /\.rpt|\.rb|\.ind|\.pchip|\.pc-|\.sg|\.mgrid|\.mt\b|\.obs|\.chart|\.lg|\.cgrid|\.note|\.d-good|\.d-bad|\.d-neu|\.sum|\.agua/.test(t)).join('\n'); }
+function saveBlob(filename, blob){ const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); }
+function imgToDataURL(src){ return new Promise(res => { const i = new Image(); i.onload = () => { const c = document.createElement('canvas'); c.width = i.naturalWidth; c.height = i.naturalHeight; c.getContext('2d').drawImage(i,0,0); try { res(c.toDataURL('image/png')); } catch { res(src); } }; i.onerror = () => res(src); i.src = src; }); }
+async function baixarHTML(){
+  const p = patientById(state.pid), e = state.evals.find(x=>x.id===state.eid);
+  const logo = await imgToDataURL(LOGO);
+  const body = reportHTML(p, e.id).split(`src="${LOGO}"`).join(`src="${logo}"`);
+  const doc = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Avaliação corporal | ${esc(p.nome)} | ${fdate(e.data)}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Rubik:wght@400;500;600;700&display=swap"><style>body{margin:0;background:#F6EEF2;padding:16px}${rptCss()}@media print{body{background:#fff;padding:0}.rpt{box-shadow:none}.chart,.ind,.sg,section{break-inside:avoid}.rpt-head{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>${body}</body></html>`;
+  saveBlob(`avaliacao-${slug(p.nome)}-${e.data}.html`, new Blob([doc], {type:'text/html'}));
+}
+async function baixarPDF(btn){
+  if (!window.html2canvas || !window.jspdf) { toast('As bibliotecas de PDF não carregaram. Verifique a conexão e tente de novo.'); return; }
+  const p = patientById(state.pid), e = state.evals.find(x=>x.id===state.eid);
+  btn.disabled = true; btn.textContent = 'Gerando PDF…';
+  const host = document.createElement('div'); host.style.cssText = 'position:fixed;left:-10000px;top:0;width:820px;background:#fff';
+  host.innerHTML = reportHTML(p, e.id); document.body.appendChild(host);
+  try {
+    await document.fonts?.ready;
+    const art = host.querySelector('.rpt'); art.style.boxShadow = 'none'; art.style.borderRadius = '0';
+    const blocks = []; [...art.children].forEach(ch => { const cg = ch.querySelector(':scope > .cgrid'); if (cg) { cg.style.display = 'block'; [...cg.children].forEach(c => blocks.push(c)); } else blocks.push(ch); });
+    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit:'mm', format:'a4' });
+    const PW = 210, PH = 297, M = 10, CW = PW - 2*M; let y = M, first = true, col = 0, rowH = 0; const HW = (CW - 4) / 2;
+    for (const b of blocks) {
+      const isChart = b.classList.contains('chart');
+      if (isChart) { b.style.width = '400px'; b.style.margin = '0'; }
+      const cv = await html2canvas(b, { scale: 2, backgroundColor: '#FFFFFF', logging: false, useCORS: true });
+      if (isChart) {
+        const h = cv.height * HW / cv.width;
+        if (col === 0 && !first && y + h > PH - M) { pdf.addPage(); y = M; }
+        pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', M + col*(HW+4), y, HW, h);
+        rowH = Math.max(rowH, h); col++; if (col === 2) { y += rowH + 4; col = 0; rowH = 0; }
+      } else {
+        if (col === 1) { y += rowH + 4; col = 0; rowH = 0; }
+        const h = cv.height * CW / cv.width;
+        if (!first && y + h > PH - M) { pdf.addPage(); y = M; }
+        pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', M, y, CW, Math.min(h, PH - 2*M)); y += h;
+      }
+      first = false;
+    }
+    const n = pdf.getNumberOfPages(); for (let i = 1; i <= n; i++) { pdf.setPage(i); pdf.setFontSize(8); pdf.setTextColor(120); pdf.text(`${p.nome} · ${fdate(e.data)} · página ${i} de ${n}`, PW/2, PH - 4, { align:'center' }); }
+    pdf.save(`avaliacao-${slug(p.nome)}-${e.data}.pdf`);
+  } catch (err) { toast('Erro ao gerar o PDF: ' + (err?.message || err)); }
+  finally { host.remove(); btn.disabled = false; btn.textContent = 'Baixar PDF'; }
+}
+function exportarBackup(){
+  const data = { app:'avaliacao-corporal', versao:1, exportadoEm:new Date().toISOString(), config: state.cfgDoc, clientes: state.patients, avaliacoes: state.evals };
+  saveBlob(`backup-avaliacoes-${today()}.json`, new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+}
+async function importarBackup(file){
+  let data; try { data = JSON.parse(await file.text()); } catch { toast('Arquivo inválido. Escolha um backup .json exportado pelo app.'); return; }
+  const cl = data.clientes || data.pacientes || [], av = data.avaliacoes || [];
+  if (!Array.isArray(cl) || !Array.isArray(av)) { toast('Arquivo inválido. Escolha um backup .json exportado pelo app.'); return; }
+  try {
+    toast('Importando…');
+    for (const c of cl) { const {id, ...rest} = c; if (id) await store.set('clientes', id, rest); }
+    for (const a of av) { const {id, ...rest} = a; if (id) await store.set('avaliacoes', id, rest); }
+    if (data.config && Object.keys(data.config).length && !Object.keys(state.cfgDoc).length) await store.set('config', 'geral', data.config);
+    toast(`Importado: ${cl.length} ${cl.length===1?'cliente':'clientes'} e ${av.length} ${av.length===1?'avaliação':'avaliações'}.`);
+    go('lista', null);
+  } catch (e) { toast('Erro ao importar: ' + (e?.message || e)); }
+}
+
+/* ============ Eventos ============ */
+async function doAuth(fn, okMsg){
+  const btn = document.querySelector('#app form [type=submit]'); if (btn) btn.disabled = true;
+  try { await fn(); if (okMsg) { state.authMsg = { err:false, text: okMsg }; render(); } }
+  catch (e) { state.authMsg = { err:true, text: authErr(e) }; render(); }
+}
+function demoLogin(email, nome){ state.authMsg = null; onLogin({ uid:'demo', email, displayName: nome || email }); }
+document.addEventListener('click', async ev => {
+  const t = ev.target.closest('[data-act]'); if (!t) return; const act = t.dataset.act, id = t.dataset.id;
+  if (act === 'tab') { state.authTab = t.dataset.t; state.authMsg = null; render(); }
+  else if (act === 'google') {
+    if (DEMO) { state.authMsg = { err:true, text:'O login com Google funciona depois que o Firebase for configurado (guia de instalação, passos 2 a 6).' }; render(); return; }
+    const prov = new FB.GoogleAuthProvider(); prov.setCustomParameters({ prompt:'select_account' });
+    try { await FB.signInWithPopup(auth, prov); }
+    catch (e) { if (['auth/popup-blocked','auth/operation-not-supported-in-this-environment'].includes(e?.code)) { await FB.signInWithRedirect(auth, prov); } else { state.authMsg = { err:true, text: authErr(e) }; render(); } }
+  }
+  else if (act === 'logout') { if (DEMO) { state.user = null; demoSave(); onLogout(); } else { await FB.signOut(auth); } }
+  else if (act === 'start') { state._focusSearch = true; go('lista', null); }
+  else if (act === 'home') go('lista', null);
+  else if (act === 'config') go('config', null);
+  else if (act === 'novoPaciente') go('pform', null);
+  else if (act === 'abrir') go('paciente', id || state.pid);
+  else if (act === 'editPaciente') go('pform', state.pid);
+  else if (act === 'novaAval') { startDraft(null); go('form', state.pid, null); }
+  else if (act === 'editAval') { startDraft(id); go('form', state.pid, id); }
+  else if (act === 'goStep') goStep(+t.dataset.i);
+  else if (act === 'prevStep') goStep(state.step - 1);
+  else if (act === 'nextStep') goStep(state.step + 1);
+  else if (act === 'relatorio') go('relatorio', state.pid, id);
+  else if (act === 'cancel') { state.confirm = null; render(); }
+  else if (act === 'delPaciente') { state.confirm = 'p:'+state.pid; render(); }
+  else if (act === 'delAval') { state.confirm = 'e:'+id; render(); }
+  else if (act === 'delPacienteOk') { t.disabled = true; try { for (const e of evalsOf(state.pid)) await store.del('avaliacoes', e.id); await store.del('clientes', state.pid); toast('Cliente excluída'); go('lista', null); } catch (err) { toast('Não foi possível excluir: '+(err?.message||'')); render(); } }
+  else if (act === 'delAvalOk') { t.disabled = true; try { await store.del('avaliacoes', id); state.confirm = null; toast('Avaliação excluída'); render(); } catch (err) { toast('Não foi possível excluir: '+(err?.message||'')); render(); } }
+  else if (act === 'copiar') { const ta = $('#waText'); try { await navigator.clipboard.writeText(ta.value); toast('Texto copiado'); } catch { ta.focus(); ta.select(); toast('Texto selecionado. Use Ctrl+C para copiar.'); } }
+  else if (act === 'pdf') baixarPDF(t);
+  else if (act === 'html') baixarHTML();
+  else if (act === 'exportar') exportarBackup();
+  else if (act === 'importar') $('#importFile').click();
+});
+$('#importFile').addEventListener('change', ev => { const f = ev.target.files?.[0]; ev.target.value = ''; if (f) importarBackup(f); });
+document.addEventListener('input', ev => {
+  const t = ev.target;
+  if (t.id === 'busca') { state.q = t.value; const pos = t.selectionStart; render(); const b = $('#busca'); b.focus(); b.setSelectionRange(pos,pos); return; }
+  if (t.dataset.p && state.draft) {
+    const v = t.tagName === 'SELECT' || t.dataset.t === 'text' ? t.value : num(t.value);
+    setP(state.draft, t.dataset.p, t.tagName === 'TEXTAREA' ? t.value : v);
+    if (t.dataset.p === 'data') { const p = patientById(state.pid); const a = ageAt(p?.nascimento, t.value); if (a != null) { state.draft.idade = a; const el = $('#w_idade'); if (el) el.value = a; } }
+    updateLive();
+  }
+});
+document.addEventListener('change', ev => { if (ev.target.id === 'selAval') go('relatorio', state.pid, ev.target.value); else if (ev.target.dataset.p && ev.target.tagName === 'SELECT' && state.draft) setP(state.draft, ev.target.dataset.p, ev.target.value); });
+document.addEventListener('submit', async ev => {
+  ev.preventDefault(); const f = ev.target;
+  if (f.id === 'fLogin') {
+    const email = $('#l_email').value.trim(), pass = $('#l_pass').value;
+    if (!email || !pass) { state.authMsg = { err:true, text:'Preencha e-mail e senha.' }; render(); $('#l_email').value = email; return; }
+    if (DEMO) { demoLogin(email); return; }
+    await doAuth(() => FB.signInWithEmailAndPassword(auth, email, pass));
+  }
+  if (f.id === 'fSignup') {
+    const nome = $('#s_nome').value.trim(), email = $('#s_email').value.trim(), p1 = $('#s_pass').value, p2 = $('#s_pass2').value;
+    const keep = () => { $('#s_nome').value = nome; $('#s_email').value = email; };
+    if (!nome || !email) { state.authMsg = { err:true, text:'Preencha nome e e-mail.' }; render(); keep(); return; }
+    if (p1.length < 6) { state.authMsg = { err:true, text:'A senha precisa ter pelo menos 6 caracteres.' }; render(); keep(); return; }
+    if (p1 !== p2) { state.authMsg = { err:true, text:'As duas senhas não são iguais.' }; render(); keep(); return; }
+    if (DEMO) { demoLogin(email, nome); return; }
+    await doAuth(async () => { const cred = await FB.createUserWithEmailAndPassword(auth, email, p1); await FB.updateProfile(cred.user, { displayName: nome }); state.user && (state.user.displayName = nome); updateBrand(); });
+  }
+  if (f.id === 'fReset') {
+    const email = $('#r_email').value.trim(); if (!email) { state.authMsg = { err:true, text:'Digite o e-mail.' }; render(); return; }
+    if (DEMO) { state.authMsg = { err:false, text:'No modo demonstração não há envio de e-mail.' }; render(); return; }
+    await doAuth(() => FB.sendPasswordResetEmail(auth, email), `Se houver uma conta com ${email}, o link para criar nova senha foi enviado. Confira também a caixa de spam.`);
+  }
+  if (f.id === 'pform') {
+    const nome = $('#p_nome').value.trim(); const err = $('#pErr'); if (!nome) { err.textContent = 'Informe o nome da cliente.'; err.hidden = false; return; }
+    const old = state.pid ? patientById(state.pid) : null; const id = state.pid || newId();
+    const obj = { nome, sexo: $('#p_sexo').value, nascimento: $('#p_nasc').value, altura: num($('#p_alt').value), telefone: $('#p_tel').value.replace(/\D/g,''), obs: $('#p_obs').value.trim(), criadoEm: old?.criadoEm || new Date().toISOString() };
+    try { f.querySelector('[type=submit]').disabled = true; await store.set('clientes', id, obj); state.q = ''; toast(old ? 'Cadastro atualizado' : 'Cliente cadastrada'); go('paciente', id); }
+    catch (e2) { err.textContent = 'Não foi possível salvar: ' + (e2?.message || 'erro'); err.hidden = false; f.querySelector('[type=submit]').disabled = false; }
+  }
+  if (f.id === 'wform') {
+    const err = $('#wErr'); const msg = validateStep(state.step);
+    if (msg) { err.textContent = msg; err.hidden = false; return; }
+    if (state.step < STEPS.length - 1) { goStep(state.step + 1); return; }
+    const bad = firstInvalid(); if (bad >= 0) { goStep(bad); return; }
+    const o = clean(state.draft); o.pacienteId = state.pid; o.medidas = o.medidas || {}; o.dobras = o.dobras || {};
+    const old = state.eid ? state.evals.find(x=>x.id===state.eid) : null; const id = state.eid || newId();
+    o.criadoEm = old?.criadoEm || new Date().toISOString(); o.atualizadoEm = new Date().toISOString();
+    try { $('#wSave').disabled = true; await store.set('avaliacoes', id, o);
+      const p = patientById(state.pid); if (p && num(o.altura) && !num(p.altura)) { const {id:_, ...rest} = p; await store.set('clientes', p.id, {...rest, altura:num(o.altura)}); }
+      state.draft = null; toast('Avaliação salva'); go('relatorio', state.pid, id); }
+    catch (e2) { err.textContent = 'Não foi possível salvar: ' + (e2?.message || 'erro'); err.hidden = false; $('#wSave').disabled = false; }
+  }
+  if (f.id === 'cform') {
+    const obj = { profissional: $('#c_prof').value.trim(), titulo: $('#c_tit').value.trim(), registro: $('#c_reg').value.trim(), contato: $('#c_cont').value.replace(/\D/g,''), saudacao: $('#c_sau').value.trim(), rodape: $('#c_rod').value.trim() };
+    try { await store.set('config', 'geral', obj); toast('Configurações salvas'); go('lista', null); } catch (e2) { toast('Não foi possível salvar: ' + (e2?.message||'')); }
+  }
+});
+
+boot();
+</script>
+</body>
+</html>
