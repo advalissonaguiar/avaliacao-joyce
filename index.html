@@ -230,6 +230,15 @@ table.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;
 .chart h3{font-size:15px;text-transform:uppercase;letter-spacing:.04em}
 .chart p{margin:0 0 6px;font-size:12.5px;color:var(--p-muted)}
 .chart svg{display:block;width:100%;height:auto}
+.rpt .sym-g{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px;align-items:start}
+.rpt .sym-av svg{display:block;width:100%;height:auto;max-width:430px;margin:0 auto}
+.rpt .sym-score{background:var(--p-soft);border-radius:8px;padding:12px 14px;margin-bottom:12px;display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.rpt .sym-score span:first-child{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--p-muted)}
+.rpt .sym-score b{font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.rpt .sym-score small{font-size:12.5px;color:var(--p-muted)}
+.rpt .sym .mt td{font-size:13px}.rpt .sym .mt td small{color:var(--p-muted)}.rpt .sym .mt .pchip{font-size:11.5px;padding:3px 8px;white-space:nowrap}
+.rpt .sym-ind{margin-top:10px;border-top:1px solid var(--p-line)}
+@media (max-width:620px){.rpt .sym-g{grid-template-columns:minmax(0,1fr)}}
 .lg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;margin-top:4px}
 .lg span{display:inline-flex;align-items:center;gap:6px}
 .lg i{width:12px;height:12px;border-radius:3px;display:inline-block}
@@ -856,6 +865,138 @@ function donut(mg, mm){
    <rect x="205" y="52" width="12" height="12" rx="3" fill="#F08C8F"/><text x="224" y="62" font-size="13" fill="#1C1219">Massa gorda</text><text x="224" y="80" font-size="15" font-weight="600" fill="#1C1219">${fmt(mg)} kg · ${fmt(a*100)} %</text>
    <rect x="205" y="104" width="12" height="12" rx="3" fill="#B8448F"/><text x="224" y="114" font-size="13" fill="#1C1219">Massa magra</text><text x="224" y="132" font-size="15" font-weight="600" fill="#1C1219">${fmt(mm)} kg · ${fmt((1-a)*100)} %</text></svg></div>`;
 }
+/* ============ Mapa corporal e simetria ============ */
+const PARES = [['braco','Braço'],['antebraco','Antebraço'],['coxa','Coxa'],['panturrilha','Panturrilha']];
+const SYM_TONE = { ok:'#2F7D4F', alert:'#8F5B00', danger:'#A8322A', neutral:'#A8408A' };
+function refCintura(sexo){ const t = sexo==='M' ? [94,102] : [80,88];
+  return { cuts:t, labels:['Risco baixo','Risco aumentado','Risco muito aumentado'], tones:['ok','alert','danger'], domain: sexo==='M'?[70,125]:[60,112], ticks:t, refText:`abaixo de ${t[0]} cm` }; }
+function refRCE(){ return { cuts:[0.5,0.6], labels:['Adequada','Risco aumentado','Risco alto'], tones:['ok','alert','danger'], domain:[0.35,0.75], ticks:[0.5,0.6], refText:'abaixo de 0,50' }; }
+function simetria(e){
+  const m = k => num(e?.medidas?.[k]);
+  const pares = PARES.map(([k, nome]) => {
+    const D = m(k+'D'), E = m(k+'E');
+    if (D == null || E == null || Math.max(D,E) <= 0) return { k, nome, D, E };
+    const dif = D - E, pct = Math.abs(dif) / Math.max(D,E) * 100, idx = Math.min(D,E) / Math.max(D,E) * 100;
+    const r = Math.round(pct*10)/10;
+    const tone = r < 3 ? 'ok' : r < 6 ? 'alert' : 'danger';
+    const label = r < 3 ? 'Simétrico' : r < 6 ? 'Leve diferença' : 'Diferença acentuada';
+    return { k, nome, D, E, dif, pct, idx, tone, label };
+  });
+  const ok = pares.filter(p => p.idx != null);
+  const indice = ok.length ? ok.reduce((a,p) => a + p.idx, 0) / ok.length : null;
+  const maiorD = ok.filter(p => p.dif > 0.25).length, maiorE = ok.filter(p => p.dif < -0.25).length;
+  return { pares, indice, n: ok.length, maiorD, maiorE };
+}
+function crPath(pts, closed){
+  const n = pts.length; const P = i => closed ? pts[(i+n)%n] : pts[Math.max(0, Math.min(n-1, i))];
+  const f = v => v.toFixed(1); let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 0; i < (closed ? n : n-1); i++) { const p0=P(i-1), p1=P(i), p2=P(i+1), p3=P(i+2);
+    d += ` C${f(p1[0]+(p2[0]-p0[0])/6)} ${f(p1[1]+(p2[1]-p0[1])/6)} ${f(p2[0]-(p3[0]-p1[0])/6)} ${f(p2[1]-(p3[1]-p1[1])/6)} ${f(p2[0])} ${f(p2[1])}`; }
+  return d + (closed ? 'Z' : '');
+}
+function avatarSVG(d, e, prev, sym){
+  const M = d.sexo === 'M'; const m = k => num(e?.medidas?.[k]);
+  const DEF = M ? {torax:100,cintura:84,abdome:90,quadril:100,braco:32,antebraco:27,coxa:56,panturrilha:37,alt:175}
+                : {torax:90,cintura:72,abdome:80,quadril:100,braco:28,antebraco:23,coxa:56,panturrilha:35,alt:163};
+  const val = k => m(k) ?? DEF[k];
+  const par = k => { const a = m(k+'D'), b = m(k+'E'); return [a ?? b ?? DEF[k], b ?? a ?? DEF[k]]; };
+  const W = 440, X0 = 220, Y0 = 22, HP = 456; const alt = d.alt || DEF.alt;
+  const yof = f => Y0 + f*HP;
+  /* larguras em cm, vista de frente */
+  const cm = {
+    neck: M ? 12.5 : 10.5,
+    shoulder: Math.max(val('torax')/Math.PI*(M?1.42:1.3), M?38:33),
+    chest: val('torax')/Math.PI*1.08, waist: val('cintura')/Math.PI*1.12, abd: val('abdome')/Math.PI*1.12, hip: val('quadril')/Math.PI*1.12 };
+  const lim = {}; ['braco','antebraco','coxa','panturrilha'].forEach(k => { const [a,b] = par(k); lim[k+'D'] = a/Math.PI; lim[k+'E'] = b/Math.PI; });
+  let s = HP/alt;
+  const reach = side => { const arm = lim['braco'+side], fore = lim['antebraco'+side];
+    return Math.max(cm.shoulder/2 + arm*1.2*0.2, cm.hip/2 + fore*0.62/2 + 1.5 + fore*0.4, cm.waist/2 + arm*0.78 + 1.5); };
+  const maxHalf = Math.max(reach('D'), reach('E')) * s; if (maxHalf > 98) s *= 98/maxHalf;
+  const px = v => v*s; const headRY = 0.062*HP, headRX = 0.072*HP*(M?0.6:0.57), headCY = yof(0.063);
+  const sh = px(cm.shoulder), ch = px(cm.chest), wa = px(cm.waist), ab = px(cm.abd), hi = px(cm.hip), nk = px(cm.neck);
+  const torsoR = [[nk/2, yof(.152)], [nk/2+(sh/2-nk/2)*.55, yof(.17)], [sh/2, yof(.195)], [Math.max(ch/2,(sh/2+ch/2)/2), yof(.228)], [ch/2, yof(.26)], [wa/2, yof(.375)], [ab/2, yof(.42)], [hi/2, yof(.50)], [hi/2*.96, yof(.535)]];
+  const torso = [...torsoR, [0, yof(.55)], ...torsoR.slice().reverse().map(([x,y]) => [-x,y])].map(([x,y]) => [X0+x, y]);
+  /* braços: sinal -1 = lado direito do cliente (à esquerda da figura) */
+  const armGeo = (side, sg) => {
+    const dl = px(lim['braco'+side]*1.2), ar = px(lim['braco'+side]), fo = px(lim['antebraco'+side]);
+    const xs = sh/2 - dl*0.3, xe = Math.max(xs + 2, wa/2 + ar*0.78/2 + 3), xw = Math.max(xe + 1, hi/2 + fo*0.62/2 + 3);
+    const rows = [[.185, xs, dl], [.28, xs+(xe-xs)*.475, ar], [.385, xe, ar*.78], [.43, xe+(xw-xe)*.4, fo], [.50, xw, fo*.62]];
+    const out = rows.map(([f,cx,w]) => [X0+sg*(cx+w/2), yof(f)]), inn = rows.map(([f,cx,w]) => [X0+sg*(cx-w/2), yof(f)]).reverse();
+    return { path: crPath([...out, [X0+sg*xw, yof(.515)], ...inn], true), hand:[X0+sg*(xw+1), yof(.537), fo*.40, .036*HP], rows };
+  };
+  const legGeo = (side, sg) => {
+    const th = px(lim['coxa'+side]), ca = px(lim['panturrilha'+side]), kn = th*.62, an = ca*.5;
+    const ct = hi/4, cmx = Math.max(th/2, hi/4*.95), ck = Math.max(kn/2+2.5, hi*.16), cc = Math.max(ca/2+2, ck), cn = Math.max(an/2+3, ck*.9);
+    const rows = [[.60, cmx, th], [.715, ck, kn], [.80, cc, ca], [.94, cn, an]];
+    const out = [[X0+sg*(hi/2), yof(.50)], ...rows.map(([f,cx,w]) => [X0+sg*(cx+w/2), yof(f)])];
+    const inn = [...rows.map(([f,cx,w]) => [X0+sg*Math.max(.5, cx-w/2), yof(f)]).reverse(), [X0+sg*.5, yof(.54)], [X0+sg*ct, yof(.49)]];
+    return { path: crPath([...out, ...inn], true), foot:[X0+sg*(cn+an*.25), yof(.962), an*.95, .022*HP], rows };
+  };
+  const aD = armGeo('D',-1), aE = armGeo('E',1), lD = legGeo('D',-1), lE = legGeo('E',1);
+  const shapes = [aD.path, aE.path, lD.path, lE.path, crPath(torso, true),
+    `M${X0-nk/2} ${headCY+headRY*.7}L${X0+nk/2} ${headCY+headRY*.7}L${X0+nk/2} ${yof(.17)}L${X0-nk/2} ${yof(.17)}Z`];
+  const ell = ([cx,cy,rx,ry]) => `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}"/>`;
+  const extras = [ell(aD.hand), ell(aE.hand), ell(lD.foot), ell(lE.foot), ell([X0, headCY, headRX, headRY])].join('');
+  const FILL = '#F7E1EB', LINE = '#C657A0', HAIR = '#3A2B33';
+  let g = `<svg viewBox="0 0 ${W} ${yof(1)+14}" role="img" aria-label="Mapa corporal com as medidas desta avaliação" font-family="Rubik, Arial, sans-serif">`;
+  if (!M) g += `<path d="M${X0-headRX*1.18} ${headCY} Q${X0-headRX*1.42} ${headCY-headRY*1.3} ${X0} ${headCY-headRY*1.14} Q${X0+headRX*1.42} ${headCY-headRY*1.3} ${X0+headRX*1.18} ${headCY} L${X0+headRX*1.32} ${yof(.205)} Q${X0} ${yof(.222)} ${X0-headRX*1.32} ${yof(.205)}Z" fill="${HAIR}"/>`;
+  g += `<g fill="${LINE}" stroke="${LINE}" stroke-width="4" stroke-linejoin="round">${shapes.map(p => `<path d="${p}"/>`).join('')}${extras}</g>`;
+  g += `<g fill="${FILL}">${shapes.map(p => `<path d="${p}"/>`).join('')}${extras}</g>`;
+  g += M ? `<path d="M${X0-headRX*1.02} ${headCY-headRY*.05} Q${X0-headRX*1.12} ${headCY-headRY*1.18} ${X0} ${headCY-headRY*1.1} Q${X0+headRX*1.12} ${headCY-headRY*1.18} ${X0+headRX*1.02} ${headCY-headRY*.05} Q${X0+headRX*.55} ${headCY-headRY*.62} ${X0} ${headCY-headRY*.6} Q${X0-headRX*.55} ${headCY-headRY*.62} ${X0-headRX*1.02} ${headCY-headRY*.05}Z" fill="${HAIR}"/>`
+         : `<path d="M${X0-headRX*1.05} ${headCY+headRY*.25} Q${X0-headRX*1.2} ${headCY-headRY*1.2} ${X0} ${headCY-headRY*1.1} Q${X0+headRX*1.2} ${headCY-headRY*1.2} ${X0+headRX*1.05} ${headCY+headRY*.25} Q${X0+headRX*.75} ${headCY-headRY*.55} ${X0+headRX*.1} ${headCY-headRY*.62} Q${X0-headRX*.7} ${headCY-headRY*.5} ${X0-headRX*1.05} ${headCY+headRY*.25}Z" fill="${HAIR}"/>`;
+  /* faixas de medida e rótulos */
+  const symOf = k => sym.pares.find(p => p.k === k);
+  const cin = refCintura(d.sexo); const riskK = m('cintura') != null ? 'cintura' : (m('abdome') != null ? 'abdome' : null);
+  const toneOf = k => { const base = k.replace(/[DE]$/, ''); const p = symOf(base); if (p && p.tone && /[DE]$/.test(k)) return p.tone;
+    if (k === riskK) return classify(m(k), cin).tone; return 'neutral'; };
+  const at = (rows, f) => { for (let i = 0; i < rows.length - 1; i++) { const [f0,c0,w0] = rows[i], [f1,c1,w1] = rows[i+1]; if (f >= f0 && f <= f1) { const t = (f-f0)/(f1-f0); return [c0+(c1-c0)*t, w0+(w1-w0)*t]; } } const r = rows[0]; return [r[1], r[2]]; };
+  const site = (k, f, xl, xr) => ({ k, y: yof(f), xl, xr });
+  const limb = (geo, sg, f) => { const [c,w] = at(geo.rows, f); const a = X0+sg*(c-w/2), b = X0+sg*(c+w/2); return [Math.min(a,b), Math.max(a,b)]; };
+  const sites = [
+    site('torax', .26, X0-ch/2, X0+ch/2), site('cintura', .375, X0-wa/2, X0+wa/2), site('abdome', .42, X0-ab/2, X0+ab/2), site('quadril', .50, X0-hi/2, X0+hi/2),
+    site('bracoD', .28, ...limb(aD,-1,.28)), site('bracoE', .28, ...limb(aE,1,.28)), site('antebracoD', .43, ...limb(aD,-1,.43)), site('antebracoE', .43, ...limb(aE,1,.43)),
+    site('coxaD', .60, ...limb(lD,-1,.60)), site('coxaE', .60, ...limb(lE,1,.60)), site('panturrilhaD', .80, ...limb(lD,-1,.80)), site('panturrilhaE', .80, ...limb(lE,1,.80))
+  ].filter(x => m(x.k) != null);
+  const NOMES = Object.fromEntries(MEDIDAS);
+  const leftK = ['torax','bracoD','abdome','antebracoD','coxaD','panturrilhaD'];
+  const place = list => { list.sort((a,b) => a.y - b.y); let last = -1e9; list.forEach(x => { x.ly = Math.max(x.y, last + 38); last = x.ly; });
+    const over = last - (yof(1) - 4); if (over > 0) { let lim2 = yof(1) - 4; for (let i = list.length-1; i >= 0; i--) { list[i].ly = Math.min(list[i].ly, lim2); lim2 = list[i].ly - 38; } } return list; };
+  const L = place(sites.filter(x => leftK.includes(x.k))), R = place(sites.filter(x => !leftK.includes(x.k)));
+  let bands = '', labels = '';
+  const lab = (x, left) => {
+    const col = SYM_TONE[toneOf(x.k)]; const v = m(x.k); const pv = prev ? num(prev.medidas?.[x.k]) : null;
+    const end = left ? x.xl : x.xr, tx = left ? 6 : W-6, lx = left ? 108 : W-108, anc = left ? 'start' : 'end';
+    bands += `<line x1="${(x.xl+1.5).toFixed(1)}" x2="${(x.xr-1.5).toFixed(1)}" y1="${x.y.toFixed(1)}" y2="${x.y.toFixed(1)}" stroke="${col}" stroke-width="3.2" stroke-linecap="round"/>`;
+    labels += `<polyline points="${lx},${(x.ly-4).toFixed(1)} ${(lx+(left?8:-8))},${(x.ly-4).toFixed(1)} ${end.toFixed(1)},${x.y.toFixed(1)}" fill="none" stroke="${col}" stroke-width="1" stroke-opacity=".7"/><circle cx="${end.toFixed(1)}" cy="${x.y.toFixed(1)}" r="2.6" fill="${col}"/>`;
+    labels += `<text x="${tx}" y="${(x.ly-10).toFixed(1)}" text-anchor="${anc}" font-size="12" fill="#6A5763">${esc(NOMES[x.k])}</text><text x="${tx}" y="${(x.ly+5).toFixed(1)}" text-anchor="${anc}" font-size="15" font-weight="600" fill="${col}">${fmt(v)} cm${pv!=null?`<tspan font-size="11.5" font-weight="400" fill="#6A5763"> ${sgn(v-pv)}</tspan>`:''}</text>`;
+  };
+  L.forEach(x => lab(x, true)); R.forEach(x => lab(x, false));
+  return g + bands + labels + `<text x="${X0}" y="${(yof(1)+11).toFixed(1)}" text-anchor="middle" font-size="11" fill="#6A5763">Vista de frente · lado direito do cliente à esquerda da figura</text></svg>`;
+}
+function simetriaHTML(p, e, d, prev){
+  const temMedida = MEDIDAS.some(([k]) => num(e.medidas?.[k]) != null); if (!temMedida) return '';
+  const sym = simetria(e); const sp = prev ? simetria(prev) : null;
+  let h = `<section class="rpt-block sym"><h2 class="rpt-sec">Mapa corporal e simetria <small>${d.sexo==='M'?'Masculino':'Feminino'}${d.alt?' · '+fmt(d.alt,0)+' cm':''}</small></h2><div class="sym-g"><div class="sym-av">${avatarSVG(d, e, prev, sym)}</div><div class="sym-pn">`;
+  if (sym.n) {
+    const k = sym.indice >= 97 ? ['ok','Corpo simétrico'] : sym.indice >= 94 ? ['alert','Leve diferença entre lados'] : ['danger','Diferença acentuada entre lados'];
+    const dv = sp && sp.indice != null ? sym.indice - sp.indice : null;
+    const lado = sym.maiorD > sym.maiorE ? `Lado direito maior em ${sym.maiorD} de ${sym.n} ${sym.n===1?'segmento':'segmentos'}.` : sym.maiorE > sym.maiorD ? `Lado esquerdo maior em ${sym.maiorE} de ${sym.n} ${sym.n===1?'segmento':'segmentos'}.` : 'Sem predomínio de um dos lados.';
+    h += `<div class="sym-score"><span>Índice de simetria</span><b>${fmt(sym.indice)} %</b><span class="pchip pc-${k[0]}">${k[1]}</span>${dv!=null?`<small>${sgn(dv)} ponto percentual desde a avaliação anterior</small>`:''}<small>${lado}</small></div>`;
+    h += `<div class="mt"><table><thead><tr><th>Segmento</th><th>Dir.</th><th>Esq.</th><th>Dif.</th><th>Situação</th></tr></thead><tbody>${sym.pares.map(q => q.idx==null ? `<tr><td>${q.nome}</td><td>${fmt(q.D)}</td><td>${fmt(q.E)}</td><td>-</td><td><small>medir os dois lados</small></td></tr>` : `<tr><td>${q.nome}</td><td>${fmt(q.D)}</td><td>${fmt(q.E)}</td><td style="white-space:nowrap">${sgn(q.dif)} cm<small><br>${fmt(q.pct)} %</small></td><td><span class="pchip pc-${q.tone}">${q.label}</span></td></tr>`).join('')}</tbody></table></div>`;
+    h += `<p class="note">Índice = média, nos segmentos medidos dos dois lados, da razão entre o lado menor e o maior (100 % = lados iguais). Critério prático do app: diferença abaixo de 3 % é simétrica (comum pela dominância e pela margem da fita), de 3 % a 5,9 % é leve e a partir de 6 % é acentuada. Não é classificação diagnóstica.</p>`;
+  } else h += `<p class="note">Para calcular a simetria, meça braço, antebraço, coxa e panturrilha dos dois lados (etapa Membros).</p>`;
+  h += `</div></div>`;
+  const cinV = num(e.medidas?.cintura), abV = num(e.medidas?.abdome); let ind = '';
+  const riskV = cinV ?? abV;
+  if (riskV != null) { const r = refCintura(d.sexo), k = classify(riskV, r);
+    ind += indRow({nome:'Circunferência abdominal', ref:`${r.refText} (${d.sexo==='M'?'homens':'mulheres'})`, refSrc:13, val:fmt(riskV)+' cm', sub: cinV!=null ? (abV!=null?`medida na cintura · abdome ${fmt(abV)} cm`:'medida na cintura') : 'medida no abdome (umbigo)', chip:k.label, tone:k.tone, bar:rangeBar(riskV, r)}); }
+  if (cinV != null && d.alt) { const v = cinV/d.alt, r = refRCE(), k = classify(Math.round(v*100)/100, r);
+    ind += indRow({nome:'Relação cintura/estatura', ref:r.refText, refSrc:14, val:fmt(v,2), sub:`cintura ${fmt(cinV)} / altura ${fmt(d.alt,0)} cm`, chip:k.label, tone:k.tone, bar:rangeBar(Math.round(v*100)/100, r, 2)}); }
+  if (num(e.medidas?.torax) != null && cinV != null) { const v = num(e.medidas.torax)/cinV;
+    ind += indRow({nome:'Proporção tórax/cintura', val:fmt(v,2), sub:`tórax ${fmt(num(e.medidas.torax))} / cintura ${fmt(cinV)} cm`, chip:'Quanto maior, mais em V', tone:'neutral'}); }
+  if (ind) h += `<div class="sym-ind">${ind}</div>`;
+  return h + `</section>`;
+}
 function historico(p, hist){
   const labels = hist.map((e,i) => (i===0&&hist.length>1?'1ª · ':'') + fdateShort(e.data));
   const D = hist.map(e => derive(e, p)); const cur = D.at(-1);
@@ -869,6 +1010,7 @@ function historico(p, hist){
     chartBox({title:'Massa gorda e massa magra', sub:'Quilogramas (kg)', labels, series:[{name:'Massa magra', color:PAL[0], values:pick(d=>d.mm)},{name:'Massa gorda', color:PAL[2], values:pick(d=>d.mg)}].filter(has)}),
     chartBox({title:'Gordura visceral', sub:'Nível (normal de 1 a 9)', labels, series:[{name:'Gordura visceral', color:PAL[1], values:pick(d=>d.visceral)}], refs:[{v:9.5,label:'limite do normal',color:'#A8322A'}], d:0, zero:true}),
     chartBox({title:'Idade corporal', sub:'Idade estimada pela composição corporal, comparada à idade real (anos)', labels, kind:'bar', series:[{name:'Idade real', color:'#D8C5D0', values:pick(d=>d.idadeCorporal!=null?d.idade:null)},{name:'Idade corporal', color:PAL[0], values:pick(d=>d.idadeCorporal)}], d:0, legend:true}),
+    chartBox({title:'Índice de simetria', sub:'Média da razão lado menor/lado maior nos membros (%). Linha tracejada: limite do simétrico.', labels, series:[{name:'Índice', color:PAL[0], values:hist.map(e=>simetria(e).indice)}], refs:[{v:97,label:'97 %',color:'#2F7D4F'}], extra:[97,100]}),
     chartBox({title:'Medidas do tronco', sub:'Perímetros em centímetros (cm)', labels, series:series(TRONCO,['Tórax','Cintura','Abdome','Quadril'])}),
     chartBox({title:'Membros superiores', sub:'Perímetros em centímetros (cm)', labels, series:series(['bracoE','bracoD','antebracoE','antebracoD'],['Braço E.','Braço D.','Antebraço E.','Antebraço D.'])}),
     chartBox({title:'Membros inferiores', sub:'Perímetros em centímetros (cm)', labels, series:series(['coxaE','coxaD','panturrilhaE','panturrilhaD'],['Coxa E.','Coxa D.','Panturrilha E.','Panturrilha D.'])}),
@@ -910,10 +1052,11 @@ function reportHTML(p, eid){
   const dRows = DOBRAS.filter(([k]) => num(e.dobras?.[k]) != null).map(([k,l]) => { const a = num(e.dobras[k]), b = prevE ? num(prevE.dobras?.[k]) : null; return `<tr><td>${l}</td><td>${fmt(a,0)}</td>${prevE?`<td>${b!=null?sgn(a-b,0):'-'}</td>`:''}</tr>`; }).join('');
   if (mRows || dRows) h += `<section class="rpt-block"><h2 class="rpt-sec">Medidas desta avaliação</h2><div class="mgrid">${mRows?`<div class="mt"><h3>Perímetros (cm)</h3><table><thead><tr><th>Local</th><th>Medida</th>${prevE?'<th>Variação</th>':''}</tr></thead><tbody>${mRows}</tbody></table></div>`:''}${dRows?`<div class="mt"><h3>Dobras cutâneas (mm)</h3><table><thead><tr><th>Ponto</th><th>Medida</th>${prevE?'<th>Variação</th>':''}</tr></thead><tbody>${dRows}${d.somaDobras!=null?`<tr><td><b>Soma</b></td><td><b>${fmt(d.somaDobras,0)}</b></td>${prevE?`<td>${pd.somaDobras!=null?sgn(d.somaDobras-pd.somaDobras,0):'-'}</td>`:''}</tr>`:''}</tbody></table></div>`:''}</div></section>`;
   if (e.obs) h += `<section class="rpt-block"><h2 class="rpt-sec">Observações da avaliadora</h2><div class="obs">${esc(e.obs)}</div></section>`;
+  h += simetriaHTML(p, e, d, prevE);
   h += historico(p, hist);
   h += sugestoesHTML(p, e, d, hist);
   h += `<footer class="rpt-block rpt-foot">${c0.rodape?`<p>${esc(c0.rodape)}</p>`:''}<p class="sig"><b>${esc(c0.profissional)}</b> · ${esc(c0.titulo)} · ${esc(c0.registro)}${c0.contato?' · WhatsApp '+esc(fphone(c0.contato)):''}</p><p>Use estes resultados como referência ao conversar com seu médico, nutricionista ou profissional de educação física. Bioimpedância e dobras cutâneas são métodos de estimativa; o mais útil é acompanhar a tendência entre avaliações feitas nas mesmas condições.</p>
-   <p>Fontes: (1) OMS, classificação do IMC · (2) Omron Healthcare, músculo esquelético e gordura visceral · (3) Gallagher et al., 2000, faixas adotadas pela Omron · (4) Bray e Gray, 1988, relação cintura/quadril por idade · (5) Harris-Benedict revisada, Roza e Shizgal, 1984 · (6) Jackson e Pollock, 1978, e Siri, 1961, dobras cutâneas · (7) Diretrizes Brasileiras de Hipertensão Arterial, SBC, 2020 · (8) EFSA, valores de referência para água, 2010; cálculo diário por peso: 40 mL/kg até 17 anos, 35 mL/kg de 18 a 55, 30 mL/kg de 56 a 65 e 25 mL/kg acima de 65 anos · (9) ACSM, Exercise and Fluid Replacement, 2007 · (10) OMS, Diretrizes de Atividade Física, 2020 · (11) ISSN, posição sobre proteína e exercício, 2017 · (12) OMS, ingestão de sódio para adultos, 2012.</p></footer>`;
+   <p>Fontes: (1) OMS, classificação do IMC · (2) Omron Healthcare, músculo esquelético e gordura visceral · (3) Gallagher et al., 2000, faixas adotadas pela Omron · (4) Bray e Gray, 1988, relação cintura/quadril por idade · (5) Harris-Benedict revisada, Roza e Shizgal, 1984 · (6) Jackson e Pollock, 1978, e Siri, 1961, dobras cutâneas · (7) Diretrizes Brasileiras de Hipertensão Arterial, SBC, 2020 · (8) EFSA, valores de referência para água, 2010; cálculo diário por peso: 40 mL/kg até 17 anos, 35 mL/kg de 18 a 55, 30 mL/kg de 56 a 65 e 25 mL/kg acima de 65 anos · (9) ACSM, Exercise and Fluid Replacement, 2007 · (10) OMS, Diretrizes de Atividade Física, 2020 · (11) ISSN, posição sobre proteína e exercício, 2017 · (12) OMS, ingestão de sódio para adultos, 2012 · (13) OMS, Waist circumference and waist-hip ratio, 2008 · (14) Ashwell, Gunn e Gibson, 2012, relação cintura/estatura.</p></footer>`;
   return h + `</article>`;
 }
 function waText(p, e){
