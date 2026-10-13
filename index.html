@@ -239,6 +239,8 @@ table.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;
 .rpt .sym .mt td{font-size:13px}.rpt .sym .mt td small{color:var(--p-muted)}.rpt .sym .mt .pchip{font-size:11.5px;padding:3px 8px;white-space:nowrap}
 .rpt .sym-ind{margin-top:10px;border-top:1px solid var(--p-line)}
 @media (max-width:620px){.rpt .sym-g{grid-template-columns:minmax(0,1fr)}}
+/* PDF: mantém o layout de duas colunas mesmo quando gerado no celular */
+.pdfx .rpt .sym-g{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
 .lg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;margin-top:4px}
 .lg span{display:inline-flex;align-items:center;gap:6px}
 .lg i{width:12px;height:12px;border-radius:3px;display:inline-block}
@@ -1107,10 +1109,20 @@ async function baixarPDF(btn){
   if (!window.html2canvas || !window.jspdf) { toast('As bibliotecas de PDF não carregaram. Verifique a conexão e tente de novo.'); return; }
   const p = patientById(state.pid), e = state.evals.find(x=>x.id===state.eid);
   btn.disabled = true; btn.textContent = 'Gerando PDF…';
-  const host = document.createElement('div'); host.style.cssText = 'position:fixed;left:-10000px;top:0;width:820px;background:#fff';
+  const host = document.createElement('div'); host.style.cssText = 'position:fixed;left:-10000px;top:0;width:820px;background:#fff'; host.className = 'pdfx';
   host.innerHTML = reportHTML(p, e.id); document.body.appendChild(host);
   try {
     await document.fonts?.ready;
+    /* O html2canvas corta SVG centralizado com largura relativa (avatar). Converte o avatar em imagem com tamanho fixo antes da captura. */
+    await Promise.all([...host.querySelectorAll('.sym-av svg')].map(svg => new Promise(res => {
+      const r = svg.getBoundingClientRect(); const w = Math.round(r.width), hh = Math.round(r.height);
+      const c = svg.cloneNode(true); c.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); c.setAttribute('width', w); c.setAttribute('height', hh);
+      const img = new Image(); img.width = w; img.height = hh; img.alt = '';
+      img.style.cssText = `display:block;width:${w}px;height:${hh}px;margin:0 auto`;
+      img.onload = img.onerror = () => res();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(c));
+      svg.replaceWith(img);
+    })));
     const art = host.querySelector('.rpt'); art.style.boxShadow = 'none'; art.style.borderRadius = '0';
     const blocks = []; [...art.children].forEach(ch => { const cg = ch.querySelector(':scope > .cgrid'); if (cg) { cg.style.display = 'block'; [...cg.children].forEach(c => blocks.push(c)); } else blocks.push(ch); });
     const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit:'mm', format:'a4' });
